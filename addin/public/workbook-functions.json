@@ -34,7 +34,7 @@
         "dimensionality": "matrix"
       },
       "options": {
-        "stream": true,
+        "cancelable": true,
         "requiresAddress": true
       },
       "parameters": [

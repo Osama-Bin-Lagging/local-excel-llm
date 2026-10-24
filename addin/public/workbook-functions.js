@@ -83,20 +83,41 @@ Rules: fill only empty cells; never delete anything; use the workbook's sheet na
 reference the data over typed-in numbers; at most ${DO_MAX_EDITS} edits.`;
 const plans = new Map(); // key → edits from the last preview, so apply writes exactly what was shown
 
-// The workbook can carry injected instructions, so DO never writes formulas that reach outside it:
-// network / external-call functions, other add-ins (incl. LOKUP's own LLM calls), [book] links, DDE.
-const BLOCKED_FUNCS = new Set("WEBSERVICE FILTERXML IMAGE HYPERLINK RTD CALL REGISTER.ID EXEC STOCKHISTORY INFO".split(" "));
-const BUILTIN_DOTTED = new Set(("STDEV VAR NORM NORMSDIST PERCENTILE PERCENTRANK QUARTILE RANK MODE T F CHISQ BETA BINOM GAMMA GAMMALN " +
-  "LOGNORM POISSON WEIBULL EXPON HYPGEOM NEGBINOM CONFIDENCE COVARIANCE CEILING FLOOR Z ERROR ERF ERFC FORECAST " +
-  "NETWORKDAYS WORKDAY ISO").split(" "));
+// The workbook can carry injected instructions, so DO only writes formulas built from an allowlist of
+// built-in functions that can't reach outside the workbook (no WEBSERVICE/IMAGE/add-ins/INDIRECT/LET/LAMBDA…),
+// with no [book]/[table] brackets or DDE pipes. The formula is scanned the way Excel tokenises it.
+const DO_SAFE_FUNCS = new Set([...KNOWN_FUNCS].filter((f) => !["INDIRECT", "LET", "LAMBDA"].includes(f)).concat(
+  ("NPV IRR XNPV XIRR MIRR PMT PV FV RATE NPER IPMT PPMT YEARFRAC ISOWEEKNUM EXP LOG10 SUMSQ CORREL SLOPE INTERCEPT RSQ " +
+   "TREND GROWTH FIXED DOLLAR NUMBERVALUE STDEV.S STDEV.P VAR.S VAR.P VAR STDEVP PERCENTILE.INC PERCENTILE.EXC " +
+   "QUARTILE QUARTILE.INC QUARTILE.EXC RANK.EQ RANK.AVG MODE.SNGL CEILING.MATH FLOOR.MATH NORM.DIST NORM.S.DIST NORM.INV " +
+   "FORECAST FORECAST.LINEAR NETWORKDAYS.INTL WORKDAY.INTL AVERAGEIFS MAXIFS MINIFS IFS SWITCH CONCAT TEXTJOIN XLOOKUP XMATCH").split(" ")));
+const BARE_OK = /^(\$?[A-Z]{1,3}\$?\d+|\$?[A-Z]{1,3}|\$?\d+|TRUE|FALSE)$/i; // cell, column (A:A), row, boolean
+
 function unsafeFormula(f) {
-  const code = maskStrings(f);
-  if (/\[/.test(code)) return "link to another file";
-  if (/\|/.test(code)) return "DDE link";
-  for (const [, name] of code.matchAll(/([A-Z_][A-Z0-9_.]*)\s*\(/gi)) {
-    const n = name.toUpperCase().replace(/^_XLFN\./, "");
-    if (BLOCKED_FUNCS.has(n)) return `${n} not allowed`;
-    if (n.includes(".") && !BUILTIN_DOTTED.has(n.split(".")[0])) return `${n} not allowed (add-in function)`;
+  const src = f.replace(/^[=+\-@]/, "");
+  for (let i = 0; i < src.length; ) {
+    const ch = src[i];
+    if (ch === '"') { // string literal, "" escapes
+      for (i++; i < src.length && !(src[i] === '"' && src[i + 1] !== '"'); i += src[i] === '"' ? 2 : 1);
+      if (i >= src.length) return "unclosed string";
+      i++;
+    } else if (ch === "'") { // quoted sheet name, '' escapes; must be followed by !
+      for (i++; i < src.length && !(src[i] === "'" && src[i + 1] !== "'"); i += src[i] === "'" ? 2 : 1);
+      if (src[i + 1] !== "!") return "bad sheet reference";
+      i += 2;
+    } else if (ch === "[" || ch === "]") return "brackets (link to another file / table) not allowed";
+    else if (ch === "|") return "DDE link";
+    else if (/[0-9]/.test(ch)) { const m = /^\d+(\.\d+)?(E[+-]?\d+)?/i.exec(src.slice(i)); i += m[0].length; }
+    else if (/[A-Za-z_$\\]/.test(ch)) {
+      const tok = /^[A-Za-z_$\\][A-Za-z0-9_.$\\]*/.exec(src.slice(i))[0];
+      i += tok.length;
+      const next = src.slice(i).trimStart()[0];
+      if (next === "(") {
+        const n = tok.toUpperCase().replace(/^_XLFN\./, "");
+        if (!DO_SAFE_FUNCS.has(n)) return `${n} not allowed`;
+      } else if (next !== "!" && !BARE_OK.test(tok)) return `name ${tok} not allowed`;
+      else if (next === "!") i = i + src.slice(i).indexOf("!") + 1;
+    } else i++;
   }
   return null;
 }
@@ -201,45 +222,52 @@ async function applyPlan(key, edits) {
   });
 }
 
-// Streaming: the cell shows progress, and the writes happen after this calculation has finished.
+const outcomes = new Map(); // key → result line of an apply this session (also stops re-applying a 0-edit run)
+
+const appliedLine = (r) => `✓ Applied ${r.written} edit${r.written === 1 ? "" : "s"} · run ${r.run}` +
+  (r.skipped ? ` · skipped ${r.skipped} (no longer empty)` : "") + ` · undo: =LOOOKUP.UNDO(${r.run})`;
+
+// Not streaming (Excel forbids stream + requiresAddress, and DO needs its own address). Apply returns
+// "Applying…", writes after this calculation, then recalculates this cell, which then shows the outcome.
 async function workbookDo(instruction, apply, model, invocation) {
-  const show = (v) => invocation.setResult(Array.isArray(v) ? v : [[v]]);
   try {
-    if (isEmpty(instruction)) return show("");
+    if (isEmpty(instruction)) return [[""]];
     const m = model || DEFAULT_MODEL;
     const key = hashKey(m + "\u0000" + instruction);
+    if (outcomes.has(key)) return [[outcomes.get(key)]];
     const done = await findRun(key);
-    if (done) return show(`✓ Applied earlier · run ${done} · undo: =LOOOKUP.UNDO(${done})`);
+    if (done) return [[`✓ Applied earlier · run ${done} · undo: =LOOOKUP.UNDO(${done})`]];
+    const caller = callerOf(invocation);
 
     if (apply && plans.has(key)) {
-      show("Applying…");
       const edits = plans.get(key).filter((e) => !e.skip);
       setTimeout(async () => {
         try {
           const r = await applyPlan(key, edits);
-          if (r.already) return show(`✓ Applied earlier · run ${r.run} · undo: =LOOOKUP.UNDO(${r.run})`);
-          show(`✓ Applied ${r.written} edit${r.written === 1 ? "" : "s"} · run ${r.run}` +
-            (r.skipped ? ` · skipped ${r.skipped} (no longer empty)` : "") + ` · undo: =LOOOKUP.UNDO(${r.run})`);
+          outcomes.set(key, r.already ? `✓ Applied earlier · run ${r.run} · undo: =LOOOKUP.UNDO(${r.run})` : appliedLine(r));
         } catch (e) {
-          show(`⚠ Could not apply: ${e.message || e}`);
+          outcomes.set(key, `⚠ Could not apply: ${e.message || e}`);
         }
+        Excel.run(async (ctx) => {
+          ctx.workbook.worksheets.getItem(caller.sheet).getRange(caller.cell).calculate();
+          await ctx.sync();
+        }).catch(() => {});
       }, 0);
-      return;
+      return [["Applying…"]];
     }
 
-    show("Planning…");
     const wb = await readWorkbook();
-    const caller = callerOf(invocation);
     let text = serialiseWorkbook(wb, caller);
     for (const rows of WORKBOOK_ROW_STEPS) {
       if (text.length <= WORKBOOK_MAX_CHARS) break;
       text = serialiseWorkbook(wb, caller, rows);
     }
-    if (text.length > WORKBOOK_MAX_CHARS) return show("⚠ Workbook too large for LOOOKUP.DO.");
+    if (text.length > WORKBOOK_MAX_CHARS) return [["⚠ Workbook too large for LOOOKUP.DO."]];
     const reply = await generate(buildPrompt(`Task: ${instruction}`, text), m, invocation, DO_SYSTEM, undefined,
       { num_ctx: contextFor(text), num_predict: 4096, format: "json" });
     const plan = parsePlan(reply, wb, caller);
-    if (!plan) return show("⚠ The model did not return a usable plan. Try again or rephrase.");
+    if (!plan) return [["⚠ The model did not return a usable plan. Try again or rephrase."]];
+    if (!plan.length) return [["No edits proposed."]];
     for (const e of plan) {
       if (e.skip) continue;
       if (inPreviewArea(e, caller, plan.length + 1)) e.skip = "DO cell / preview area";
@@ -247,13 +275,12 @@ async function workbookDo(instruction, apply, model, invocation) {
     }
     plans.set(key, plan);
     const ok = plan.filter((e) => !e.skip).length;
-    if (!plan.length) return show("No edits proposed.");
-    show([
+    return [
       [`Preview: ${ok} edit${ok === 1 ? "" : "s"}${apply ? " (re-enter this cell to apply)" : " (set apply to TRUE to write)"}`, "Now", "New"],
       ...plan.map((e) => [`${e.sheet}!${e.cell}`, e.skip ? "" : "(empty)", e.skip ? `skipped: ${e.skip}` : e.value]),
-    ]);
+    ];
   } catch (e) {
-    show(`⚠ ${e.message || e}`);
+    return [[`⚠ ${e.message || e}`]];
   }
 }
 
