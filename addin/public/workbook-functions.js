@@ -83,7 +83,25 @@ Rules: fill only empty cells; never delete anything; use the workbook's sheet na
 reference the data over typed-in numbers; at most ${DO_MAX_EDITS} edits.`;
 const plans = new Map(); // key → edits from the last preview, so apply writes exactly what was shown
 
-const hashKey = (s) => [...s].reduce((h, c) => (Math.imul(h, 31) + c.charCodeAt(0)) | 0, 7).toString(16);
+// The workbook can carry injected instructions, so DO never writes formulas that reach outside it:
+// network / external-call functions, other add-ins (incl. LOKUP's own LLM calls), [book] links, DDE.
+const BLOCKED_FUNCS = new Set("WEBSERVICE FILTERXML IMAGE HYPERLINK RTD CALL REGISTER.ID EXEC STOCKHISTORY INFO".split(" "));
+const BUILTIN_DOTTED = new Set(("STDEV VAR NORM NORMSDIST PERCENTILE PERCENTRANK QUARTILE RANK MODE T F CHISQ BETA BINOM GAMMA GAMMALN " +
+  "LOGNORM POISSON WEIBULL EXPON HYPGEOM NEGBINOM CONFIDENCE COVARIANCE CEILING FLOOR Z ERROR ERF ERFC FORECAST " +
+  "NETWORKDAYS WORKDAY ISO").split(" "));
+function unsafeFormula(f) {
+  const code = maskStrings(f);
+  if (/\[/.test(code)) return "link to another file";
+  if (/\|/.test(code)) return "DDE link";
+  for (const [, name] of code.matchAll(/([A-Z_][A-Z0-9_.]*)\s*\(/gi)) {
+    const n = name.toUpperCase().replace(/^_XLFN\./, "");
+    if (BLOCKED_FUNCS.has(n)) return `${n} not allowed`;
+    if (n.includes(".") && !BUILTIN_DOTTED.has(n.split(".")[0])) return `${n} not allowed (add-in function)`;
+  }
+  return null;
+}
+
+const hashKey =(s) => [...s].reduce((h, c) => (Math.imul(h, 31) + c.charCodeAt(0)) | 0, 7).toString(16);
 
 // Model reply → [{ sheet, cell, value, skip? }]. Only cell values/formulas on existing sheets.
 function parsePlan(text, wb, caller) {
@@ -109,6 +127,7 @@ function parsePlan(text, wb, caller) {
     else if (!sheet) edit.skip = "no such sheet";
     else if (!["string", "number", "boolean"].includes(typeof value)) edit.skip = "bad value";
     else if (seen.has(id)) edit.skip = "duplicate";
+    else if (typeof value === "string" && /^[=+\-@]/.test(value) && unsafeFormula(value)) edit.skip = `blocked: ${unsafeFormula(value)}`; // Excel treats +, -, @ as formula starts too
     seen.add(id);
     return edit;
   });
