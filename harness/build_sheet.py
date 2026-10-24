@@ -1,11 +1,11 @@
 """Build the local-LLM-in-Excel test workbook."""
-import datetime as dt
+import datetime as dt, os
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.formatting.rule import CellIsRule
 from openpyxl.worksheet.datavalidation import DataValidation
 
-OUT = "/Users/manitjhajharia/Desktop/excel-local-llm/llm_test_sheet.xlsx"
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "llm_test_sheet.xlsx")
 F = "Arial"
 BASE = Font(name=F, size=10)
 BOLD = Font(name=F, size=10, bold=True)
