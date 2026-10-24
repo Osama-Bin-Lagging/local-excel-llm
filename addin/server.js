@@ -22,7 +22,23 @@ const LOG_PROMPTS = process.env.LOG_PROMPTS === "1";
 const LOG_FILE = path.join(__dirname, "logs", "prompts.log");
 if (LOG_PROMPTS) fs.mkdirSync(path.dirname(LOG_FILE), { recursive: true });
 
+// Browsers send an Origin header on cross-site requests. Only the add-in's own pages (https://localhost:3000)
+// may call the model routes; local tools (curl, the test harness) send no Origin and are allowed.
+// Requiring JSON forces browsers into a CORS preflight, which this server never approves.
+const SELF_ORIGIN = `https://localhost:${PORT}`;
+function rejectForeign(req, res) {
+  const origin = req.headers.origin;
+  const json = String(req.headers["content-type"] || "").toLowerCase().startsWith("application/json");
+  if ((origin && origin !== SELF_ORIGIN) || (req.method === "POST" && !json)) {
+    res.writeHead(403, { "content-type": "text/plain" });
+    res.end("forbidden: requests must come from the add-in (same origin, JSON)");
+    return true;
+  }
+  return false;
+}
+
 function proxy(req, res) {
+  if (rejectForeign(req, res)) return;
   if (LOG_PROMPTS && req.method === "POST") {
     let body = "";
     req.on("data", (c) => (body += c));
@@ -53,7 +69,9 @@ const { spawn } = require("child_process");
 const CLAUDE_BIN = process.env.CLAUDE_BIN || "claude";
 const CLAUDE_MAX_PARALLEL = 3; // Excel can fire dozens of cells at once
 const CLAUDE_TIMEOUT_MS = 90000;
-const CLAUDE_MODELS = { claude: "sonnet", "claude:sonnet": "sonnet", "claude:haiku": "haiku", "claude:opus": "opus" };
+const CLAUDE_MODELS = Object.assign(Object.create(null), { claude: "sonnet", "claude:sonnet": "sonnet", "claude:haiku": "haiku", "claude:opus": "opus" });
+const CLAUDE_MAX_QUEUE = 50;
+const CLAUDE_MAX_BODY = 2 * 1024 * 1024; // 2 MB: room for a whole-workbook prompt
 let claudeRunning = 0;
 const claudeQueue = [];
 
@@ -64,17 +82,25 @@ function runClaude({ model, system, prompt }) {
       const args = ["-p", "--tools", "", "--strict-mcp-config", "--no-session-persistence", "--setting-sources", "",
                     "--output-format", "json", "--model", CLAUDE_MODELS[model] || "sonnet"];
       if (system) args.push("--system-prompt", system);
-      const child = spawn(CLAUDE_BIN, args, { stdio: ["pipe", "pipe", "pipe"] });
-      let out = "", err = "";
-      const timer = setTimeout(() => child.kill("SIGKILL"), CLAUDE_TIMEOUT_MS);
-      child.stdout.on("data", (c) => (out += c));
-      child.stderr.on("data", (c) => (err += c));
+      let done = false, timer = null, child;
       const finish = (result) => {
+        if (done) return; // close/error can both fire; release the slot exactly once
+        done = true;
         clearTimeout(timer);
         claudeRunning--;
         if (claudeQueue.length) claudeQueue.shift()();
         resolve(result);
       };
+      try {
+        child = spawn(CLAUDE_BIN, args, { stdio: ["pipe", "pipe", "pipe"] });
+      } catch (e) {
+        return finish({ status: 503, body: { error: `could not start '${CLAUDE_BIN}'` } });
+      }
+      let out = "", err = "";
+      timer = setTimeout(() => child.kill("SIGKILL"), CLAUDE_TIMEOUT_MS);
+      child.stdout.on("data", (c) => (out += c));
+      child.stderr.on("data", (c) => (err += c));
+      child.stdin.on("error", () => {}); // EPIPE if the CLI exits early must not crash the server
       child.on("error", () => finish({ status: 503, body: { error: `'${CLAUDE_BIN}' not found — install Claude Code and log in` } }));
       child.on("close", () => {
         try {
@@ -89,25 +115,48 @@ function runClaude({ model, system, prompt }) {
       });
       child.stdin.end(prompt);
     };
-    claudeRunning < CLAUDE_MAX_PARALLEL ? start() : claudeQueue.push(start);
+    if (claudeRunning < CLAUDE_MAX_PARALLEL) start();
+    else if (claudeQueue.length < CLAUDE_MAX_QUEUE) claudeQueue.push(start);
+    else resolve({ status: 429, body: { error: "too many Claude requests queued; try again shortly" } });
   });
 }
 
 function claudeRoute(req, res) {
-  let body = "";
-  req.on("data", (c) => (body += c));
+  if (rejectForeign(req, res)) return;
+  const reply = (status, obj) => {
+    if (res.headersSent) return;
+    res.writeHead(status, { "content-type": "application/json" });
+    res.end(JSON.stringify(obj));
+  };
+  let body = "", tooBig = false;
+  req.on("data", (c) => {
+    if (tooBig) return; // keep reading (and discarding) so the 413 reaches the caller
+    body += c;
+    if (body.length > CLAUDE_MAX_BODY) {
+      tooBig = true;
+      body = "";
+      reply(413, { error: "request too large (max 2 MB)" });
+    }
+  });
   req.on("end", async () => {
+    if (tooBig) return;
     let j;
     try {
       j = JSON.parse(body);
     } catch {
-      res.writeHead(400, { "content-type": "application/json" });
-      return res.end(JSON.stringify({ error: "bad JSON" }));
+      return reply(400, { error: "bad JSON" });
     }
+    const ok = j && typeof j === "object" && typeof j.prompt === "string" && j.prompt.length > 0 &&
+      (j.system === undefined || j.system === null || typeof j.system === "string") &&
+      typeof j.model === "string" && Object.prototype.hasOwnProperty.call(CLAUDE_MODELS, j.model);
+    if (!ok) return reply(400, { error: `expected {model: ${Object.keys(CLAUDE_MODELS).join("|")}, prompt: string, system?: string}` });
     if (LOG_PROMPTS) fs.appendFileSync(LOG_FILE, `\n===== ${new Date().toISOString()} model=${j.model}\n${j.prompt}\n`);
-    const { status, body: out } = await runClaude(j);
-    res.writeHead(status, { "content-type": "application/json" });
-    res.end(JSON.stringify(out));
+    try {
+      const { status, body: out } = await runClaude({ model: j.model, system: j.system || undefined, prompt: j.prompt });
+      reply(status, out);
+    } catch (e) {
+      reply(500, { error: "claude call failed" });
+    }
   });
 }
 
