@@ -50,8 +50,8 @@ Insert **Local LLM Workbook** too (Home → Add-ins). It reads every sheet itsel
 =LOOOKUP.H("Which region had the highest margin?")
 =LOOOKUP.H("Any inconsistencies between Summary and Deal Model?", "claude")
 ```
-Runs when entered or edited (not on every change elsewhere — each run is a model call). Local models take
-workbooks up to ~20k characters of cell content; `"claude"` models up to ~400k.
+Runs when entered or edited (not on every change elsewhere — each run is a model call). Up to ~50k characters
+of cell content; bigger sheets are cut to their top rows. Local models are slow on big workbooks (~2 min for 25k chars on an M-series Air) — use `"claude"` there.
 
 ## Settings
 In `addin/public/functions.js`:

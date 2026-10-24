@@ -83,9 +83,10 @@ async function generateClaude(key, model, fullPrompt, system, controller) {
   return answer;
 }
 
-async function generate(fullPrompt, model, invocation, system, sampling) {
+// opts: { num_ctx, num_predict, format } for local models (whole-workbook prompts need a bigger window)
+async function generate(fullPrompt, model, invocation, system, sampling, opts = {}) {
   const m = model || DEFAULT_MODEL;
-  const key = m + "\u0000" + (system || "") + "\u0000" + fullPrompt + "\u0000" + JSON.stringify(sampling || {});
+  const key = m + "\u0000" + (system || "") + "\u0000" + fullPrompt + "\u0000" + JSON.stringify(sampling || {}) + JSON.stringify(opts);
   if (cache.has(key)) return cache.get(key);
 
   const controller = new AbortController();
@@ -103,12 +104,13 @@ async function generate(fullPrompt, model, invocation, system, sampling) {
         model: m,
         prompt: fullPrompt,
         ...(system ? { system } : {}),
+        ...(opts.format ? { format: opts.format } : {}),
         stream: false,
         think: false,
         keep_alive: "30m",
         options: {
-          num_predict: 256,
-          num_ctx: 8192, // default 4096 silently cut long prompts from the start
+          num_predict: opts.num_predict || 256,
+          num_ctx: opts.num_ctx || 8192, // default 4096 silently cut long prompts from the start
           ...(sampling ? { temperature: 0.7, top_p: 0.8, top_k: 20, seed: sampling.seed } : { temperature: 0 }),
         },
       }),

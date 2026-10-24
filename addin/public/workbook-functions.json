@@ -24,6 +24,56 @@
           "optional": true
         }
       ]
+    },
+    {
+      "id": "DO",
+      "name": "DO",
+      "description": "Fill other cells from an instruction. Preview first; apply=TRUE writes it once. Never deletes or overwrites.",
+      "result": {
+        "type": "any",
+        "dimensionality": "matrix"
+      },
+      "options": {
+        "stream": true,
+        "requiresAddress": true
+      },
+      "parameters": [
+        {
+          "name": "instruction",
+          "description": "What to fill, e.g. \"fill Revenue in Raw Data column J as Quantity \u00d7 Unit Price\"",
+          "type": "string"
+        },
+        {
+          "name": "apply",
+          "description": "FALSE/omitted = preview only; TRUE = write the previewed edits (once)",
+          "type": "boolean",
+          "optional": true
+        },
+        {
+          "name": "model",
+          "description": "Optional: Ollama model name, or \"claude\" / \"claude:haiku\" / \"claude:opus\"",
+          "type": "string",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "id": "UNDO",
+      "name": "UNDO",
+      "description": "Undo one LOOOKUP.DO run (clears the cells it filled, unless you changed them since).",
+      "result": {
+        "type": "string"
+      },
+      "options": {
+        "stream": true
+      },
+      "parameters": [
+        {
+          "name": "run",
+          "description": "Run number shown by LOOOKUP.DO",
+          "type": "number"
+        }
+      ]
     }
   ]
 }

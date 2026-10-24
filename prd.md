@@ -126,12 +126,14 @@ Decision: keep qwen3:4b-instruct. Lesson: check built-in model parameters (`olla
 |---|---|---|---|
 | Claude backend | `model` = `"claude"` (Sonnet), `"claude:haiku"`, `"claude:sonnet"`, `"claude:opus"` routes the call through `claude -p` via the add-in server | Must | Works in LOKUP.H/V; tools disabled (`--tools ""`), no MCP/hooks/settings/session; ≤ 3 concurrent; 90 s timeout; clear `#N/A` if `claude` missing or logged out |
 | Claude benchmark | Sonnet + Haiku on the 144 tasks | Must | Scores vs qwen3:4b-instruct (102/128, 12/16) recorded here |
-| Workbook functions | Text and formula answers using every sheet's used range (names TBD: `LOKUP.WH`/`LOKUP.WV` or a second add-in `LOOOKUP.H`/`.V`) | Should | Shared runtime; snapshot at call time; size cap with a clear error; works with local and Claude models |
-| Cell agent | `=LOKUP.DO(prompt, [model])` plans workbook edits (new sheet, values, formulas, formats) and applies them after calculation | Could | Preview-first; each prompt applied **once** (ledger in workbook settings) so recalcs never repeat edits; only whitelisted operations; never deletes data |
+| Workbook functions | `=LOOOKUP.H(prompt,[model])` (text) and `=LOOOKUP.V(request,[model])` (formula) using every sheet — second add-in, shared runtime | Should | Snapshot at call time; big sheets shown as top rows + "N more rows not shown" (never a bare #VALUE!); works with local and Claude models. **H built 2026-10-24**, V to do |
+| Cell agent | `=LOOOKUP.DO(instruction,[apply],[model])` fills other cells with values/formulas; `=LOOOKUP.UNDO(run)` reverses one run | Could | (1) `apply` omitted/FALSE → spilled **preview** (cell · now · new), nothing written. (2) `apply` TRUE → writes the previewed plan **once**; a ledger on a very-hidden sheet `LOOOKUP_log` makes recalcs/reopens never repeat it; cell shows "✓ Applied N · run k". (3) Only sets cell values/formulas (≤ 200); never deletes, never creates/renames sheets, never writes into non-empty cells, its own cell or its preview area, or sheets that don't exist. (4) Old contents backed up in the ledger; UNDO(k) restores them once, skipping cells changed since. (5) Writes happen after calculation (deferred), result streamed into the cell |
 | Default stays local | No cell goes online unless it names a `claude…` model | Must | Default model unchanged (qwen3:4b-instruct) |
 
 ### Risks / open questions
 - Shared runtime on Excel 16.111 for Mac: supported in docs, untested here — validate with a spike before building on it.
 - Writing to the workbook from a custom function's run is discouraged by Microsoft; edits are deferred until after calculation. Excel's Undo does not cover add-in edits → cell agent must preview first.
 - Claude calls count toward the user's Claude usage limits; prompts and data leave the machine for those cells.
-- Naming for workbook functions (WH/WV vs LOOOKUP second add-in) — user to decide.
+- Naming decided: second add-in `LOOOKUP` (.H, .V, .DO, .UNDO).
+- Excel for Mac caches add-in metadata and ignores version bumps → `./reload.sh` + re-insert after changing functions.json.
+- DO with a 4B local model on big workbooks is unproven; preview-first is the guard against bad plans.
