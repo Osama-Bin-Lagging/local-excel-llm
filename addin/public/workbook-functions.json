@@ -28,7 +28,7 @@
     {
       "id": "DO",
       "name": "DO",
-      "description": "Fill other cells from an instruction. Preview first; apply=TRUE writes it once. Never deletes or overwrites.",
+      "description": "Fill other cells from an instruction (writes once; only empty cells; never deletes). Undo with LOOOKUP.UNDO.",
       "result": {
         "type": "any",
         "dimensionality": "matrix"
@@ -42,12 +42,6 @@
           "name": "instruction",
           "description": "What to fill, e.g. \"fill Revenue in Raw Data column J as Quantity \u00d7 Unit Price\"",
           "type": "string"
-        },
-        {
-          "name": "apply",
-          "description": "FALSE/omitted = preview only; TRUE = write the previewed edits (once)",
-          "type": "boolean",
-          "optional": true
         },
         {
           "name": "model",

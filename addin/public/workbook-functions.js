@@ -73,7 +73,7 @@ async function workbookAsk(prompt, model, invocation) {
 }
 
 /* ---------------------------------------------------------------- LOOOKUP.DO / LOOOKUP.UNDO (cell agent)
-   DO previews a plan of cell edits; with apply = TRUE it writes that plan once, after calculation.
+   DO plans cell edits and writes them once, after calculation.
    Ledger + backup live on a very-hidden sheet, so recalcs and reopening never repeat a run. */
 
 const LOG_SHEET = "LOOOKUP_log"; // columns: run | key | status | sheet | cell | old | new
@@ -82,7 +82,6 @@ const DO_SYSTEM = `You edit a Microsoft Excel workbook by filling cells. Reply w
 {"edits":[{"cell":"Sheet1!B2","value":"text, a number, or a formula starting with ="}]}
 Rules: fill only empty cells; never delete anything; use the workbook's sheet names exactly; prefer formulas that
 reference the data over typed-in numbers; at most ${DO_MAX_EDITS} edits.`;
-const plans = new Map(); // key → edits from the last preview, so apply writes exactly what was shown
 
 // The workbook can carry injected instructions, so DO only writes formulas built from an allowlist of
 // built-in functions that can't reach outside the workbook (no WEBSERVICE/IMAGE/add-ins/INDIRECT/LET/LAMBDA…),
@@ -163,7 +162,7 @@ function parsePlan(text, wb, caller) {
   });
 }
 
-// The DO cell and the area its preview spills into are off limits.
+// The DO cell and the area its result table spills into are off limits.
 function inPreviewArea(edit, caller, rows) {
   if (edit.sheet !== caller.sheet) return false;
   const c = colToNum(edit.cell.replace(/\d+/, "")), r = Number(edit.cell.replace(/[A-Z]+/, ""));
@@ -227,67 +226,68 @@ async function applyPlan(key, edits) {
       at.values = log;
       await ctx.sync();
     }
-    return { run, written: todo.length, skipped: targets.length - todo.length };
+    return { run, written: todo.length, skipped: targets.length - todo.length, cells: new Set(todo.map(({ e }) => `${e.sheet}!${e.cell}`)) };
   });
 }
 
-const outcomes = new Map(); // key → result line of an apply this session (also stops re-applying a 0-edit run)
+const outcomes = new Map(); // key → result table of a run this session (also stops re-running a 0-edit run)
+const inFlight = new Set(); // keys being planned/applied right now (a recalc mid-run must not start another)
 
-const appliedLine = (r) => `✓ Applied ${r.written} edit${r.written === 1 ? "" : "s"} · run ${r.run}` +
-  (r.skipped ? ` · skipped ${r.skipped} (no longer empty)` : "") + ` · undo: =LOOOKUP.UNDO(${r.run})`;
-
-// Not streaming (Excel forbids stream + requiresAddress, and DO needs its own address). Apply returns
-// "Applying…", writes after this calculation, then recalculates this cell, which then shows the outcome.
-async function workbookDo(instruction, apply, model, invocation) {
+// Not streaming (Excel forbids stream + requiresAddress, and DO needs its own address). Plans, returns
+// "Applying…", writes after this calculation, then recalculates its cell, which shows what was written.
+async function workbookDo(instruction, model, invocation) {
   try {
     if (isEmpty(instruction)) return [[""]];
     const m = model || WORKBOOK_DEFAULT_MODEL;
     const key = hashKey(m + "\u0000" + instruction);
-    if (outcomes.has(key)) return [[outcomes.get(key)]];
+    if (outcomes.has(key)) return outcomes.get(key);
+    if (inFlight.has(key)) return [["Applying…"]];
     const done = await findRun(key);
     if (done) return [[`✓ Applied earlier · run ${done} · undo: =LOOOKUP.UNDO(${done})`]];
     const caller = callerOf(invocation);
 
-    if (apply && plans.has(key)) {
-      const edits = plans.get(key).filter((e) => !e.skip);
-      setTimeout(async () => {
-        try {
-          const r = await applyPlan(key, edits);
-          outcomes.set(key, r.already ? `✓ Applied earlier · run ${r.run} · undo: =LOOOKUP.UNDO(${r.run})` : appliedLine(r));
-        } catch (e) {
-          outcomes.set(key, `⚠ Could not apply: ${e.message || e}`);
-        }
-        Excel.run(async (ctx) => {
-          ctx.workbook.worksheets.getItem(caller.sheet).getRange(caller.cell).calculate();
-          await ctx.sync();
-        }).catch(() => {});
-      }, 0);
-      return [["Applying…"]];
+    inFlight.add(key);
+    let plan;
+    try {
+      const wb = await readWorkbook();
+      let text = serialiseWorkbook(wb, caller);
+      for (const rows of WORKBOOK_ROW_STEPS) {
+        if (text.length <= WORKBOOK_MAX_CHARS) break;
+        text = serialiseWorkbook(wb, caller, rows);
+      }
+      if (text.length > WORKBOOK_MAX_CHARS) return [["⚠ Workbook too large for LOOOKUP.DO."]];
+      const reply = await generate(buildPrompt(`Task: ${instruction}`, text), m, invocation, DO_SYSTEM, undefined,
+        { num_ctx: contextFor(text), num_predict: 4096, format: "json" });
+      plan = parsePlan(reply, wb, caller);
+      if (!plan) return [["⚠ The model did not return a usable plan. Try again or rephrase."]];
+      if (!plan.length) return [["No edits proposed."]];
+      for (const e of plan) {
+        if (e.skip) continue;
+        if (inPreviewArea(e, caller, plan.length + 1)) e.skip = "DO cell / result area";
+        else if (currentValue(wb, e) !== "") e.skip = "not empty";
+      }
+    } finally {
+      if (!plan || !plan.length) inFlight.delete(key);
     }
 
-    const wb = await readWorkbook();
-    let text = serialiseWorkbook(wb, caller);
-    for (const rows of WORKBOOK_ROW_STEPS) {
-      if (text.length <= WORKBOOK_MAX_CHARS) break;
-      text = serialiseWorkbook(wb, caller, rows);
-    }
-    if (text.length > WORKBOOK_MAX_CHARS) return [["⚠ Workbook too large for LOOOKUP.DO."]];
-    const reply = await generate(buildPrompt(`Task: ${instruction}`, text), m, invocation, DO_SYSTEM, undefined,
-      { num_ctx: contextFor(text), num_predict: 4096, format: "json" });
-    const plan = parsePlan(reply, wb, caller);
-    if (!plan) return [["⚠ The model did not return a usable plan. Try again or rephrase."]];
-    if (!plan.length) return [["No edits proposed."]];
-    for (const e of plan) {
-      if (e.skip) continue;
-      if (inPreviewArea(e, caller, plan.length + 1)) e.skip = "DO cell / preview area";
-      else if (currentValue(wb, e) !== "") e.skip = "not empty";
-    }
-    plans.set(key, plan);
-    const ok = plan.filter((e) => !e.skip).length;
-    return [
-      [`Preview: ${ok} edit${ok === 1 ? "" : "s"}${apply ? " (re-enter this cell to apply)" : " (set apply to TRUE to write)"}`, "Now", "New"],
-      ...plan.map((e) => [`${e.sheet}!${e.cell}`, e.skip ? "" : "(empty)", e.skip ? `skipped: ${e.skip}` : e.value]),
-    ];
+    setTimeout(async () => {
+      try {
+        const r = await applyPlan(key, plan.filter((e) => !e.skip));
+        outcomes.set(key, r.already ? [[`✓ Applied earlier · run ${r.run} · undo: =LOOOKUP.UNDO(${r.run})`]] : [
+          [`✓ Applied ${r.written} edit${r.written === 1 ? "" : "s"} · run ${r.run} · undo: =LOOOKUP.UNDO(${r.run})`, "Value", "Status"],
+          ...plan.map((e) => [`${e.sheet}!${e.cell}`, String(e.value ?? ""),
+            e.skip ? `skipped: ${e.skip}` : r.cells.has(`${e.sheet}!${e.cell}`) ? "written" : "skipped: no longer empty"]),
+        ]);
+      } catch (e) {
+        outcomes.set(key, [[`⚠ Could not apply: ${e.message || e}`]]);
+      }
+      inFlight.delete(key);
+      Excel.run(async (ctx) => {
+        ctx.workbook.worksheets.getItem(caller.sheet).getRange(caller.cell).calculate();
+        await ctx.sync();
+      }).catch(() => {});
+    }, 0);
+    return [["Applying…"]];
   } catch (e) {
     return [[`⚠ ${e.message || e}`]];
   }
@@ -295,7 +295,7 @@ async function workbookDo(instruction, apply, model, invocation) {
 
 // UNDO(run): restore what that run overwrote (empty cells), once. Cells changed since the run are left alone.
 async function workbookUndo(run, invocation) {
-  const show = (v) => invocation.setResult([[v]]);
+  const show = (v) => invocation.setResult(v); // scalar string result
   if (isEmpty(run)) return show("Usage: =LOOOKUP.UNDO(run number shown by LOOOKUP.DO)");
   show("Undoing…");
   setTimeout(async () => {

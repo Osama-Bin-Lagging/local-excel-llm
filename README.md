@@ -51,7 +51,7 @@ Pass a local model name to keep it offline:
 ```
 =LOOOKUP.H("Which region had the highest margin?")                    ← Claude Sonnet
 =LOOOKUP.H("Any inconsistencies between Summary and Deal Model?", "qwen3:4b-instruct")   ← local
-=LOOOKUP.DO("fill Gross Sales for the first 5 orders in Raw Data")    ← preview; add , TRUE to write
+=LOOOKUP.DO("fill Gross Sales for the first 5 orders in Raw Data")    ← writes once (empty cells only)
 =LOOOKUP.UNDO(1)                                                       ← undo run 1
 ```
 Runs when entered or edited (not on every change elsewhere — each run is a model call). Up to ~50k characters
