@@ -124,7 +124,8 @@ function unsafeFormula(f, sheets) {
         if (!sheets.has(tok.toLowerCase())) return `sheet ${tok} not in this workbook`;
         i = i + src.slice(i).indexOf("!") + 1;
       }
-    } else i++;
+    } else if (/[\s+\-*/^&=<>%,;:(){}#]/.test(ch)) i++; // operators and punctuation
+    else return `character ${JSON.stringify(ch)} not allowed`; // fail closed (e.g. non-ASCII names)
   }
   return null;
 }
