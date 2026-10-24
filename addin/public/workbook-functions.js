@@ -80,8 +80,12 @@ async function workbookAsk(prompt, model, invocation) {
 // A very-hidden ledger sheet created by the add-in froze Excel for Mac when the user switched sheets.
 const LOG_SETTING = "LOOOKUP_log";
 const DO_MAX_EDITS = 200;
+const DO_MAX_RANGE_CELLS = 10000;
 const DO_SYSTEM = `You edit a Microsoft Excel workbook by filling cells. Reply with JSON only, no prose:
-{"edits":[{"cell":"Sheet1!B2","value":"text, a number, or a formula starting with ="}]}
+{"edits":[{"cell":"Sheet1!B2","value":"text, a number, or a formula starting with ="},
+          {"range":"Sheet1!C2:C100","value":"=A2*B2"}]}
+To fill many cells with the same pattern, use ONE "range" edit: write the formula for the range's first cell; it is
+copied down/across like Excel's fill handle (relative references adjust). Never list cells one by one for a pattern.
 Rules: fill only empty cells; never delete anything; use the workbook's sheet names exactly; prefer formulas that
 reference the data over typed-in numbers; at most ${DO_MAX_EDITS} edits.`;
 
@@ -135,6 +139,19 @@ function unsafeFormula(f, sheets) {
 const hashKey =(s) => [...s].reduce((h, c) => (Math.imul(h, 31) + c.charCodeAt(0)) | 0, 7).toString(16);
 
 // Model reply → [{ sheet, cell, value, skip? }]. Only cell values/formulas on existing sheets.
+// Edit target "Sheet!A1" or "Sheet!A1:C9" → { sheet, cell (top-left), last (bottom-right, or null) }.
+const TARGET = /^(?:'((?:[^']|'')+)'!|([^!']+)!)?\$?([A-Z]{1,3})\$?(\d+)(?::\$?([A-Z]{1,3})\$?(\d+))?$/i;
+const editCells = (e) => {
+  if (!e.last) return [e.cell];
+  const [c1, r1] = [colToNum(e.cell.replace(/\d+/, "")), Number(e.cell.replace(/[A-Z]+/, ""))];
+  const [c2, r2] = [colToNum(e.last.replace(/\d+/, "")), Number(e.last.replace(/[A-Z]+/, ""))];
+  const out = [];
+  for (let r = r1; r <= r2; r++) for (let c = c1; c <= c2; c++) out.push(numToCol(c) + r);
+  return out;
+};
+const editLabel = (e) => `${e.sheet}!${e.cell}${e.last ? ":" + e.last : ""}`;
+
+// Model reply → [{ sheet, cell, last, value, skip? }]. Only cell values/formulas on existing sheets.
 function parsePlan(text, wb, caller) {
   const json = text.slice(text.search(/[[{]/), Math.max(text.lastIndexOf("}"), text.lastIndexOf("]")) + 1);
   let data;
@@ -147,19 +164,26 @@ function parsePlan(text, wb, caller) {
   const names = new Map(wb.map((s) => [s.sheet.toLowerCase(), s.sheet]));
   const seen = new Set();
   return raw.map((e) => {
-    const m = /^(?:'((?:[^']|'')+)'!|([^!']+)!)?\$?([A-Z]{1,3})\$?(\d+)$/i.exec(straightQuotes(String(e && e.cell || "").trim()));
+    const target = straightQuotes(String((e && (e.range || e.cell)) || "").trim());
+    const m = TARGET.exec(target);
     const sheet = m ? names.get(String(m[1] ? m[1].replace(/''/g, "'") : m[2] || caller.sheet).toLowerCase()) : null;
-    const cell = m ? m[3].toUpperCase() + m[4] : String(e && e.cell);
     let value = e && e.value;
     if (typeof value === "string" && value.startsWith("=")) value = straightQuotes(value);
-    const edit = { sheet: sheet || (m && (m[1] || m[2])) || caller.sheet, cell, value };
-    const id = `${edit.sheet}!${cell}`;
+    const edit = { sheet: sheet || (m && (m[1] || m[2])) || caller.sheet, cell: m ? m[3].toUpperCase() + m[4] : target, last: null, value };
+    if (m && m[5]) {
+      const [a, b] = [[colToNum(m[3].toUpperCase()), +m[4]], [colToNum(m[5].toUpperCase()), +m[6]]];
+      edit.cell = numToCol(Math.min(a[0], b[0])) + Math.min(a[1], b[1]);
+      edit.last = numToCol(Math.max(a[0], b[0])) + Math.max(a[1], b[1]);
+      if (edit.last === edit.cell) edit.last = null;
+    }
+    const cells = m ? editCells(edit) : [];
     if (!m) edit.skip = "bad cell";
     else if (!sheet) edit.skip = "no such sheet";
+    else if (cells.length > DO_MAX_RANGE_CELLS) edit.skip = `range too big (max ${DO_MAX_RANGE_CELLS} cells)`;
     else if (!["string", "number", "boolean"].includes(typeof value)) edit.skip = "bad value";
-    else if (seen.has(id)) edit.skip = "duplicate";
+    else if (cells.some((c) => seen.has(`${edit.sheet}!${c}`))) edit.skip = "duplicate";
     else if (typeof value === "string" && /^[=+\-@]/.test(value) && unsafeFormula(value, new Set(names.keys()))) edit.skip = `blocked: ${unsafeFormula(value, new Set(names.keys()))}`; // Excel treats +, -, @ as formula starts too
-    seen.add(id);
+    if (!edit.skip) cells.forEach((c) => seen.add(`${edit.sheet}!${c}`));
     return edit;
   });
 }
@@ -167,17 +191,22 @@ function parsePlan(text, wb, caller) {
 // The DO cell and the area its result table spills into are off limits.
 function inPreviewArea(edit, caller, rows) {
   if (edit.sheet !== caller.sheet) return false;
-  const c = colToNum(edit.cell.replace(/\d+/, "")), r = Number(edit.cell.replace(/[A-Z]+/, ""));
   const cc = colToNum(caller.cell.replace(/\d+/, "")), cr = Number(caller.cell.replace(/[A-Z]+/, ""));
-  return c >= cc && c <= cc + 2 && r >= cr && r <= cr + rows;
+  return editCells(edit).some((cell) => {
+    const c = colToNum(cell.replace(/\d+/, "")), r = Number(cell.replace(/[A-Z]+/, ""));
+    return c >= cc && c <= cc + 2 && r >= cr && r <= cr + rows;
+  });
 }
 
-function currentValue(wb, edit) {
+// True when any target cell already has content (in the snapshot taken for planning).
+function hasContent(wb, edit) {
   const s = wb.find((x) => x.sheet === edit.sheet);
-  if (!s || !s.address) return "";
+  if (!s || !s.address) return false;
   const { col, row } = parseAddress(s.address);
-  const r = Number(edit.cell.replace(/[A-Z]+/, "")) - row, c = colToNum(edit.cell.replace(/\d+/, "")) - col;
-  return (s.formulas[r] || [])[c] ?? "";
+  return editCells(edit).some((cell) => {
+    const r = Number(cell.replace(/[A-Z]+/, "")) - row, c = colToNum(cell.replace(/\d+/, "")) - col;
+    return ((s.formulas[r] || [])[c] ?? "") !== "";
+  });
 }
 
 async function readLog(ctx) {
@@ -204,20 +233,27 @@ async function applyPlan(key, edits, run) {
     const prior = rows.find((x) => x[1] === key);
     if (prior) return { run: Number(prior[0]), already: true };
     const targets = edits.map((e) => {
-      const r = ctx.workbook.worksheets.getItem(e.sheet).getRange(e.cell);
+      const ws = ctx.workbook.worksheets.getItem(e.sheet);
+      const r = ws.getRange(e.last ? `${e.cell}:${e.last}` : e.cell);
       r.load("formulas");
-      return { e, r };
+      return { e, r, first: ws.getRange(e.cell) };
     });
     await ctx.sync();
-    const todo = targets.filter(({ r }) => r.formulas[0][0] === "");
-    todo.forEach(({ e, r }) => (r.formulas = [[e.value]]));
+    const todo = targets.filter(({ r }) => r.formulas.every((row) => row.every((f) => f === "")));
+    todo.forEach(({ e, r, first }) => {
+      first.formulas = [[e.value]];
+      if (e.last) r.copyFrom(first, "Formulas"); // like the fill handle: relative references adjust per cell
+    });
     todo.forEach(({ r }) => r.load("formulas")); // log what Excel stored (it normalises formulas), for UNDO's check
     await ctx.sync();
     if (todo.length) {
-      save(rows.concat(todo.map(({ e, r }) => [run, key, "applied", e.sheet, e.cell, "", String(r.formulas[0][0])])));
+      const log = todo.flatMap(({ e, r }) => editCells(e).map((cell, i) =>
+        [run, key, "applied", e.sheet, cell, "", String(r.formulas.flat()[i])]));
+      save(rows.concat(log));
       await ctx.sync();
     }
-    return { run, written: todo.length, skipped: targets.length - todo.length, cells: new Set(todo.map(({ e }) => `${e.sheet}!${e.cell}`)) };
+    const cellCount = todo.reduce((n, { e }) => n + editCells(e).length, 0);
+    return { run, written: cellCount, skipped: targets.length - todo.length, cells: new Set(todo.map(({ e }) => editLabel(e))) };
   });
 }
 
@@ -252,12 +288,13 @@ async function workbookDo(instruction, model, invocation) {
     for (const e of plan) {
       if (e.skip) continue;
       if (inPreviewArea(e, caller, plan.length + 1)) e.skip = "DO cell / result area";
-      else if (currentValue(wb, e) !== "") e.skip = "not empty";
+      else if (hasContent(wb, e)) e.skip = "not empty";
     }
     const ok = plan.filter((e) => !e.skip);
+    const n = ok.reduce((k, e) => k + editCells(e).length, 0);
     const table = [
-      [`✓ ${ok.length} edit${ok.length === 1 ? "" : "s"} · run ${next} · undo: =LOOOKUP.UNDO(${next})`, "Value", "Status"],
-      ...plan.map((e) => [`${e.sheet}!${e.cell}`, String(e.value ?? ""), e.skip ? `skipped: ${e.skip}` : "written"]),
+      [`✓ ${n} cell${n === 1 ? "" : "s"} · run ${next} · undo: =LOOOKUP.UNDO(${next})`, "Value", "Status"],
+      ...plan.map((e) => [editLabel(e), String(e.value ?? ""), e.skip ? `skipped: ${e.skip}` : "written"]),
     ];
     outcomes.set(key, table); // set before writing, so a recalc meanwhile can't plan/write a second time
     if (ok.length) {
