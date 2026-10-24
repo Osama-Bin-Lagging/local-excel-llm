@@ -1,6 +1,7 @@
 /* LOOOKUP — whole-workbook functions (shared runtime: custom functions can call the Excel API).
-   =LOOOKUP.H(prompt, [model]) — answers in text using every sheet. Reuses generate() etc. from functions.js. */
+   =LOOOKUP.H(prompt, [model]) — answers in text using every sheet. Default model: Claude Sonnet. Reuses generate() etc. from functions.js. */
 
+const WORKBOOK_DEFAULT_MODEL = "claude"; // LOOOKUP → Claude Sonnet (online); LOKUP stays on the local DEFAULT_MODEL
 const WORKBOOK_MAX_CHARS = 50000; // ≈ 34k tokens: cell lists are digit-heavy (measured ~1.5 chars/token with qwen3)
 const WORKBOOK_ROW_STEPS = [50, 25, 12, 6]; // too big → show only this many top rows per sheet, smallest last
 
@@ -57,7 +58,7 @@ function callerOf(invocation) {
 // and its own answer would otherwise change the workbook and trigger another run).
 async function workbookAsk(prompt, model, invocation) {
   if (isEmpty(prompt)) return "";
-  const m = model || DEFAULT_MODEL;
+  const m = model || WORKBOOK_DEFAULT_MODEL;
   const wb = await readWorkbook();
   const caller = callerOf(invocation);
   const max = WORKBOOK_MAX_CHARS;
@@ -240,7 +241,7 @@ const appliedLine = (r) => `✓ Applied ${r.written} edit${r.written === 1 ? "" 
 async function workbookDo(instruction, apply, model, invocation) {
   try {
     if (isEmpty(instruction)) return [[""]];
-    const m = model || DEFAULT_MODEL;
+    const m = model || WORKBOOK_DEFAULT_MODEL;
     const key = hashKey(m + "\u0000" + instruction);
     if (outcomes.has(key)) return [[outcomes.get(key)]];
     const done = await findRun(key);

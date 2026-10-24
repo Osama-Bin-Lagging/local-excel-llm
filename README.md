@@ -45,13 +45,17 @@ Put a Claude model in the `model` argument — the cell's prompt and data then g
 Cells without a `claude…` model stay fully local.
 
 ## Whole-workbook questions: LOOOKUP (second add-in)
-Insert **Local LLM Workbook** too (Home → Add-ins). It reads every sheet itself — no ranges to pass:
+Insert **Local LLM Workbook** too (Home → Add-ins). It reads every sheet itself — no ranges to pass.
+**LOOOKUP uses Claude Sonnet by default, so the workbook's contents go to Anthropic** (via the Claude Code CLI).
+Pass a local model name to keep it offline:
 ```
-=LOOOKUP.H("Which region had the highest margin?")
-=LOOOKUP.H("Any inconsistencies between Summary and Deal Model?", "claude")
+=LOOOKUP.H("Which region had the highest margin?")                    ← Claude Sonnet
+=LOOOKUP.H("Any inconsistencies between Summary and Deal Model?", "qwen3:4b-instruct")   ← local
+=LOOOKUP.DO("fill Gross Sales for the first 5 orders in Raw Data")    ← preview; add , TRUE to write
+=LOOOKUP.UNDO(1)                                                       ← undo run 1
 ```
 Runs when entered or edited (not on every change elsewhere — each run is a model call). Up to ~50k characters
-of cell content; bigger sheets are cut to their top rows. Local models are slow on big workbooks (~2 min for 25k chars on an M-series Air) — use `"claude"` there.
+of cell content; bigger sheets are cut to their top rows. Local models are slow on big workbooks (~2 min for 25k chars on an M-series Air).
 
 ## Settings
 In `addin/public/functions.js`:
