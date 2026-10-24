@@ -2,6 +2,8 @@
 
 const DEFAULT_MODEL = "qwen3:4b-instruct"; // best fit for 8 GB Macs (3.3 GB in memory); see prd.md results
 const API = "https://localhost:3000/api"; // proxied by server.js to http://localhost:11434
+const CLAUDE_API = "https://localhost:3000/claude"; // server.js runs `claude -p` (tools off) for "claude…" models
+const isClaude = (m) => /^claude(:|$)/i.test(String(m || ""));
 const MAX_CONTEXT_CHARS = 20000;
 
 const cache = new Map(); // key → answer; makes recalcs of unchanged cells instant
@@ -61,6 +63,26 @@ async function ask(prompt, context, headers, model, invocation) {
 }
 
 // sampling: undefined = greedy (temperature 0); { seed } = Qwen's recommended sampling with a fixed seed
+// Cloud path: the prompt (and the cell's data) go to Anthropic via the Claude Code CLI on this Mac.
+async function generateClaude(key, model, fullPrompt, system, controller) {
+  let res;
+  try {
+    res = await fetch(CLAUDE_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
+      body: JSON.stringify({ model: model.toLowerCase(), prompt: fullPrompt, system }),
+    });
+  } catch (e) {
+    throw new CustomFunctions.Error(CustomFunctions.ErrorCode.notAvailable, "Add-in server not reachable (run ./start.sh)");
+  }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new CustomFunctions.Error(CustomFunctions.ErrorCode.notAvailable, `Claude: ${data.error || res.status}`);
+  const answer = (data.response || "").trim();
+  cache.set(key, answer);
+  return answer;
+}
+
 async function generate(fullPrompt, model, invocation, system, sampling) {
   const m = model || DEFAULT_MODEL;
   const key = m + "\u0000" + (system || "") + "\u0000" + fullPrompt + "\u0000" + JSON.stringify(sampling || {});
@@ -68,6 +90,8 @@ async function generate(fullPrompt, model, invocation, system, sampling) {
 
   const controller = new AbortController();
   invocation.onCanceled = () => controller.abort();
+
+  if (isClaude(m)) return generateClaude(key, m, fullPrompt, system, controller);
 
   let res;
   try {
@@ -689,7 +713,8 @@ async function formula(prompt, context, model, invocation) {
   };
 
   const first = judge(polish(await generate(fullPrompt, model, invocation, system)));
-  if (!FORMULA_OPTS.check || (!first.problems.length && FORMULA_OPTS.vote !== "always")) return first.f;
+  const vote = isClaude(model || DEFAULT_MODEL) ? "off" : FORMULA_OPTS.vote; // Claude: no extra samples
+  if (!FORMULA_OPTS.check || (!first.problems.length && vote !== "always")) return first.f;
 
   const candidates = [first];
   if (first.problems.length) {
@@ -697,7 +722,7 @@ async function formula(prompt, context, model, invocation) {
     const retry = fullPrompt + ` ${first.f}\n\nThat formula has problems:\n- ${first.problems.join("\n- ")}\nWrite a corrected formula.\n\nFormula:`;
     candidates.push(judge(polish(await generate(retry, model, invocation, system))));
   }
-  if (FORMULA_OPTS.vote !== "off") {
+  if (vote !== "off") {
     for (const seed of [1, 2, 3]) candidates.push(judge(polish(await generate(fullPrompt, model, invocation, system, { seed }))));
   }
 

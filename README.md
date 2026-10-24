@@ -34,6 +34,16 @@ Excel → **Home → Add-ins → Developer Add-ins → Local LLM** (once per Exc
 ./test.sh         # ~1–2 min: Ollama, model, HTTPS, server, LOKUP.H + 6 LOKUP.V formulas with known answers
 ```
 
+## Using Claude for hard cells (optional, online)
+Put a Claude model in the `model` argument — the cell's prompt and data then go to Anthropic via the
+[Claude Code](https://claude.com/claude-code) CLI on this Mac (must be installed and logged in; counts toward your Claude usage):
+```
+=LOKUP.V("Pro forma EPS", 'Deal Model'!A4:E29, "claude")        ← Sonnet
+=LOKUP.H("Summarise this review", A2, , "claude:haiku")          ← Haiku (fastest)
+```
+`"claude"` = Sonnet; also `"claude:haiku"`, `"claude:sonnet"`, `"claude:opus"`. Tools are disabled — Claude only returns text.
+Cells without a `claude…` model stay fully local.
+
 ## Settings
 In `addin/public/functions.js`:
 - `DEFAULT_MODEL` — `qwen3:4b-instruct` (best for 8 GB). On 16 GB, `qwen3:8b` is a bit more accurate.
