@@ -30,3 +30,7 @@ addin/vendor-build/node_modules/
 .omc/
 .DS_Store
 ~$*
+
+# python caches
+__pycache__/
+*.pyc
