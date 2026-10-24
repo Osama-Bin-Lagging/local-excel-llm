@@ -149,6 +149,11 @@ const editCells = (e) => {
   for (let r = r1; r <= r2; r++) for (let c = c1; c <= c2; c++) out.push(numToCol(c) + r);
   return out;
 };
+// Cell count from the corners, before anything is listed (A1:XFD1048576 must not build 17 billion strings).
+const editSize = (e) => !e.last ? 1 :
+  (colToNum(e.last.replace(/\d+/, "")) - colToNum(e.cell.replace(/\d+/, "")) + 1) *
+  (Number(e.last.replace(/[A-Z]+/, "")) - Number(e.cell.replace(/[A-Z]+/, "")) + 1);
+const inSheet = (cell) => colToNum(cell.replace(/\d+/, "")) <= 16384 && Number(cell.replace(/[A-Z]+/, "")) <= 1048576 && Number(cell.replace(/[A-Z]+/, "")) >= 1;
 const editLabel = (e) => `${e.sheet}!${e.cell}${e.last ? ":" + e.last : ""}`;
 
 // Model reply → [{ sheet, cell, last, value, skip? }]. Only cell values/formulas on existing sheets.
@@ -163,6 +168,7 @@ function parsePlan(text, wb, caller) {
   const raw = (Array.isArray(data) ? data : data.edits || []).slice(0, DO_MAX_EDITS);
   const names = new Map(wb.map((s) => [s.sheet.toLowerCase(), s.sheet]));
   const seen = new Set();
+  let total = 0; // cells across all edits
   return raw.map((e) => {
     const target = straightQuotes(String((e && (e.range || e.cell)) || "").trim());
     const m = TARGET.exec(target);
@@ -176,14 +182,19 @@ function parsePlan(text, wb, caller) {
       edit.last = numToCol(Math.max(a[0], b[0])) + Math.max(a[1], b[1]);
       if (edit.last === edit.cell) edit.last = null;
     }
-    const cells = m ? editCells(edit) : [];
-    if (!m) edit.skip = "bad cell";
+    const size = m ? editSize(edit) : 0;
+    if (!m || !inSheet(edit.cell) || (edit.last && !inSheet(edit.last))) edit.skip = "bad cell";
     else if (!sheet) edit.skip = "no such sheet";
-    else if (cells.length > DO_MAX_RANGE_CELLS) edit.skip = `range too big (max ${DO_MAX_RANGE_CELLS} cells)`;
+    else if (total + size > DO_MAX_RANGE_CELLS) edit.skip = `too many cells (max ${DO_MAX_RANGE_CELLS} per run)`;
     else if (!["string", "number", "boolean"].includes(typeof value)) edit.skip = "bad value";
-    else if (cells.some((c) => seen.has(`${edit.sheet}!${c}`))) edit.skip = "duplicate";
+    const cells = edit.skip ? [] : editCells(edit); // listed only after the size check
+    if (edit.skip) return edit;
+    if (cells.some((c) => seen.has(`${edit.sheet}!${c}`))) edit.skip = "duplicate";
     else if (typeof value === "string" && /^[=+\-@]/.test(value) && unsafeFormula(value, new Set(names.keys()))) edit.skip = `blocked: ${unsafeFormula(value, new Set(names.keys()))}`; // Excel treats +, -, @ as formula starts too
-    if (!edit.skip) cells.forEach((c) => seen.add(`${edit.sheet}!${c}`));
+    if (!edit.skip) {
+      cells.forEach((c) => seen.add(`${edit.sheet}!${c}`));
+      total += size; // only accepted edits use up the budget
+    }
     return edit;
   });
 }

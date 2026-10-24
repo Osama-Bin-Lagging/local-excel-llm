@@ -68,7 +68,7 @@ function proxy(req, res) {
 const { spawn } = require("child_process");
 const CLAUDE_BIN = process.env.CLAUDE_BIN || "claude";
 const CLAUDE_MAX_PARALLEL = 3; // Excel can fire dozens of cells at once
-const CLAUDE_TIMEOUT_MS = 180000; // whole-workbook DO plans can be long
+const CLAUDE_TIMEOUT_MS = 300000; // 5 min: whole-workbook DO plans can be long
 const CLAUDE_MODELS = Object.assign(Object.create(null), { claude: "sonnet", "claude:sonnet": "sonnet", "claude:haiku": "haiku", "claude:opus": "opus" });
 const CLAUDE_MAX_QUEUE = 50;
 const CLAUDE_MAX_BODY = 2 * 1024 * 1024; // 2 MB: room for a whole-workbook prompt
