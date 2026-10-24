@@ -93,7 +93,8 @@ const DO_SAFE_FUNCS = new Set([...KNOWN_FUNCS].filter((f) => !["INDIRECT", "LET"
    "FORECAST FORECAST.LINEAR NETWORKDAYS.INTL WORKDAY.INTL AVERAGEIFS MAXIFS MINIFS IFS SWITCH CONCAT TEXTJOIN XLOOKUP XMATCH").split(" ")));
 const BARE_OK = /^(\$?[A-Z]{1,3}\$?\d+|\$?[A-Z]{1,3}|\$?\d+|TRUE|FALSE)$/i; // cell, column (A:A), row, boolean
 
-function unsafeFormula(f) {
+// sheets: lower-cased names of this workbook's sheets; every Sheet! / 'Sheet'! prefix must be one of them.
+function unsafeFormula(f, sheets) {
   const src = f.replace(/^[=+\-@]/, "");
   for (let i = 0; i < src.length; ) {
     const ch = src[i];
@@ -101,9 +102,12 @@ function unsafeFormula(f) {
       for (i++; i < src.length && !(src[i] === '"' && src[i + 1] !== '"'); i += src[i] === '"' ? 2 : 1);
       if (i >= src.length) return "unclosed string";
       i++;
-    } else if (ch === "'") { // quoted sheet name, '' escapes; must be followed by !
+    } else if (ch === "'") { // quoted sheet name, '' escapes; must be followed by ! and be a sheet of this workbook
+      const start = i + 1;
       for (i++; i < src.length && !(src[i] === "'" && src[i + 1] !== "'"); i += src[i] === "'" ? 2 : 1);
       if (src[i + 1] !== "!") return "bad sheet reference";
+      const name = src.slice(start, i).replace(/''/g, "'");
+      if (!sheets.has(name.toLowerCase())) return `sheet ${name} not in this workbook`;
       i += 2;
     } else if (ch === "[" || ch === "]") return "brackets (link to another file / table) not allowed";
     else if (ch === "|") return "DDE link";
@@ -116,7 +120,10 @@ function unsafeFormula(f) {
         const n = tok.toUpperCase().replace(/^_XLFN\./, "");
         if (!DO_SAFE_FUNCS.has(n)) return `${n} not allowed`;
       } else if (next !== "!" && !BARE_OK.test(tok)) return `name ${tok} not allowed`;
-      else if (next === "!") i = i + src.slice(i).indexOf("!") + 1;
+      else if (next === "!") {
+        if (!sheets.has(tok.toLowerCase())) return `sheet ${tok} not in this workbook`;
+        i = i + src.slice(i).indexOf("!") + 1;
+      }
     } else i++;
   }
   return null;
@@ -148,7 +155,7 @@ function parsePlan(text, wb, caller) {
     else if (!sheet) edit.skip = "no such sheet";
     else if (!["string", "number", "boolean"].includes(typeof value)) edit.skip = "bad value";
     else if (seen.has(id)) edit.skip = "duplicate";
-    else if (typeof value === "string" && /^[=+\-@]/.test(value) && unsafeFormula(value)) edit.skip = `blocked: ${unsafeFormula(value)}`; // Excel treats +, -, @ as formula starts too
+    else if (typeof value === "string" && /^[=+\-@]/.test(value) && unsafeFormula(value, new Set(names.keys()))) edit.skip = `blocked: ${unsafeFormula(value, new Set(names.keys()))}`; // Excel treats +, -, @ as formula starts too
     seen.add(id);
     return edit;
   });
