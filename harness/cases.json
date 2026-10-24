@@ -1,0 +1,4996 @@
+[
+ {
+  "id": "F01",
+  "row": 2,
+  "skill": "Aggregation",
+  "prompt": "Total revenue across all rows.",
+  "fn": "formula",
+  "contextAddress": "Sales!A1:F13",
+  "context": [
+   [
+    "Region",
+    "Month",
+    "Product",
+    "Units",
+    "Unit price (Rs)",
+    "Revenue (Rs)"
+   ],
+   [
+    "North",
+    46023,
+    "A",
+    120,
+    250,
+    30000
+   ],
+   [
+    "North",
+    46054,
+    "B",
+    80,
+    400,
+    32000
+   ],
+   [
+    "North",
+    46082,
+    "A",
+    95,
+    250,
+    23750
+   ],
+   [
+    "South",
+    46023,
+    "B",
+    60,
+    400,
+    24000
+   ],
+   [
+    "South",
+    46054,
+    "A",
+    150,
+    250,
+    37500
+   ],
+   [
+    "South",
+    46082,
+    "B",
+    110,
+    400,
+    44000
+   ],
+   [
+    "East",
+    46023,
+    "A",
+    70,
+    250,
+    17500
+   ],
+   [
+    "East",
+    46054,
+    "A",
+    65,
+    250,
+    16250
+   ],
+   [
+    "East",
+    46082,
+    "B",
+    40,
+    400,
+    16000
+   ],
+   [
+    "West",
+    46023,
+    "B",
+    130,
+    400,
+    52000
+   ],
+   [
+    "West",
+    46054,
+    "B",
+    90,
+    400,
+    36000
+   ],
+   [
+    "West",
+    46082,
+    "A",
+    105,
+    250,
+    26250
+   ]
+  ],
+  "parts": "SUM,F2:F13",
+  "expect": "formula"
+ },
+ {
+  "id": "F02",
+  "row": 3,
+  "skill": "Conditional sum",
+  "prompt": "Total revenue for the North region.",
+  "fn": "formula",
+  "contextAddress": "Sales!A1:F13",
+  "context": [
+   [
+    "Region",
+    "Month",
+    "Product",
+    "Units",
+    "Unit price (Rs)",
+    "Revenue (Rs)"
+   ],
+   [
+    "North",
+    46023,
+    "A",
+    120,
+    250,
+    30000
+   ],
+   [
+    "North",
+    46054,
+    "B",
+    80,
+    400,
+    32000
+   ],
+   [
+    "North",
+    46082,
+    "A",
+    95,
+    250,
+    23750
+   ],
+   [
+    "South",
+    46023,
+    "B",
+    60,
+    400,
+    24000
+   ],
+   [
+    "South",
+    46054,
+    "A",
+    150,
+    250,
+    37500
+   ],
+   [
+    "South",
+    46082,
+    "B",
+    110,
+    400,
+    44000
+   ],
+   [
+    "East",
+    46023,
+    "A",
+    70,
+    250,
+    17500
+   ],
+   [
+    "East",
+    46054,
+    "A",
+    65,
+    250,
+    16250
+   ],
+   [
+    "East",
+    46082,
+    "B",
+    40,
+    400,
+    16000
+   ],
+   [
+    "West",
+    46023,
+    "B",
+    130,
+    400,
+    52000
+   ],
+   [
+    "West",
+    46054,
+    "B",
+    90,
+    400,
+    36000
+   ],
+   [
+    "West",
+    46082,
+    "A",
+    105,
+    250,
+    26250
+   ]
+  ],
+  "parts": "SUMIF,F2:F13,A2:A13,NORTH",
+  "expect": "formula"
+ },
+ {
+  "id": "F03",
+  "row": 4,
+  "skill": "Conditional sum",
+  "prompt": "Total units of product B sold in the South region.",
+  "fn": "formula",
+  "contextAddress": "Sales!A1:F13",
+  "context": [
+   [
+    "Region",
+    "Month",
+    "Product",
+    "Units",
+    "Unit price (Rs)",
+    "Revenue (Rs)"
+   ],
+   [
+    "North",
+    46023,
+    "A",
+    120,
+    250,
+    30000
+   ],
+   [
+    "North",
+    46054,
+    "B",
+    80,
+    400,
+    32000
+   ],
+   [
+    "North",
+    46082,
+    "A",
+    95,
+    250,
+    23750
+   ],
+   [
+    "South",
+    46023,
+    "B",
+    60,
+    400,
+    24000
+   ],
+   [
+    "South",
+    46054,
+    "A",
+    150,
+    250,
+    37500
+   ],
+   [
+    "South",
+    46082,
+    "B",
+    110,
+    400,
+    44000
+   ],
+   [
+    "East",
+    46023,
+    "A",
+    70,
+    250,
+    17500
+   ],
+   [
+    "East",
+    46054,
+    "A",
+    65,
+    250,
+    16250
+   ],
+   [
+    "East",
+    46082,
+    "B",
+    40,
+    400,
+    16000
+   ],
+   [
+    "West",
+    46023,
+    "B",
+    130,
+    400,
+    52000
+   ],
+   [
+    "West",
+    46054,
+    "B",
+    90,
+    400,
+    36000
+   ],
+   [
+    "West",
+    46082,
+    "A",
+    105,
+    250,
+    26250
+   ]
+  ],
+  "parts": "SUMIFS,D2:D13,A2:A13,C2:C13,SOUTH",
+  "expect": "formula"
+ },
+ {
+  "id": "F04",
+  "row": 5,
+  "skill": "Conditional count",
+  "prompt": "How many rows have more than 100 units?",
+  "fn": "formula",
+  "contextAddress": "Sales!A1:F13",
+  "context": [
+   [
+    "Region",
+    "Month",
+    "Product",
+    "Units",
+    "Unit price (Rs)",
+    "Revenue (Rs)"
+   ],
+   [
+    "North",
+    46023,
+    "A",
+    120,
+    250,
+    30000
+   ],
+   [
+    "North",
+    46054,
+    "B",
+    80,
+    400,
+    32000
+   ],
+   [
+    "North",
+    46082,
+    "A",
+    95,
+    250,
+    23750
+   ],
+   [
+    "South",
+    46023,
+    "B",
+    60,
+    400,
+    24000
+   ],
+   [
+    "South",
+    46054,
+    "A",
+    150,
+    250,
+    37500
+   ],
+   [
+    "South",
+    46082,
+    "B",
+    110,
+    400,
+    44000
+   ],
+   [
+    "East",
+    46023,
+    "A",
+    70,
+    250,
+    17500
+   ],
+   [
+    "East",
+    46054,
+    "A",
+    65,
+    250,
+    16250
+   ],
+   [
+    "East",
+    46082,
+    "B",
+    40,
+    400,
+    16000
+   ],
+   [
+    "West",
+    46023,
+    "B",
+    130,
+    400,
+    52000
+   ],
+   [
+    "West",
+    46054,
+    "B",
+    90,
+    400,
+    36000
+   ],
+   [
+    "West",
+    46082,
+    "A",
+    105,
+    250,
+    26250
+   ]
+  ],
+  "parts": "COUNTIF,D2:D13,>100",
+  "expect": "formula"
+ },
+ {
+  "id": "F05",
+  "row": 6,
+  "skill": "Conditional average",
+  "prompt": "Average unit price for product A.",
+  "fn": "formula",
+  "contextAddress": "Sales!A1:F13",
+  "context": [
+   [
+    "Region",
+    "Month",
+    "Product",
+    "Units",
+    "Unit price (Rs)",
+    "Revenue (Rs)"
+   ],
+   [
+    "North",
+    46023,
+    "A",
+    120,
+    250,
+    30000
+   ],
+   [
+    "North",
+    46054,
+    "B",
+    80,
+    400,
+    32000
+   ],
+   [
+    "North",
+    46082,
+    "A",
+    95,
+    250,
+    23750
+   ],
+   [
+    "South",
+    46023,
+    "B",
+    60,
+    400,
+    24000
+   ],
+   [
+    "South",
+    46054,
+    "A",
+    150,
+    250,
+    37500
+   ],
+   [
+    "South",
+    46082,
+    "B",
+    110,
+    400,
+    44000
+   ],
+   [
+    "East",
+    46023,
+    "A",
+    70,
+    250,
+    17500
+   ],
+   [
+    "East",
+    46054,
+    "A",
+    65,
+    250,
+    16250
+   ],
+   [
+    "East",
+    46082,
+    "B",
+    40,
+    400,
+    16000
+   ],
+   [
+    "West",
+    46023,
+    "B",
+    130,
+    400,
+    52000
+   ],
+   [
+    "West",
+    46054,
+    "B",
+    90,
+    400,
+    36000
+   ],
+   [
+    "West",
+    46082,
+    "A",
+    105,
+    250,
+    26250
+   ]
+  ],
+  "parts": "AVERAGEIF,C2:C13,E2:E13",
+  "expect": "formula"
+ },
+ {
+  "id": "F06",
+  "row": 7,
+  "skill": "Date criteria",
+  "prompt": "Revenue for East in March 2026.",
+  "fn": "formula",
+  "contextAddress": "Sales!A1:F13",
+  "context": [
+   [
+    "Region",
+    "Month",
+    "Product",
+    "Units",
+    "Unit price (Rs)",
+    "Revenue (Rs)"
+   ],
+   [
+    "North",
+    46023,
+    "A",
+    120,
+    250,
+    30000
+   ],
+   [
+    "North",
+    46054,
+    "B",
+    80,
+    400,
+    32000
+   ],
+   [
+    "North",
+    46082,
+    "A",
+    95,
+    250,
+    23750
+   ],
+   [
+    "South",
+    46023,
+    "B",
+    60,
+    400,
+    24000
+   ],
+   [
+    "South",
+    46054,
+    "A",
+    150,
+    250,
+    37500
+   ],
+   [
+    "South",
+    46082,
+    "B",
+    110,
+    400,
+    44000
+   ],
+   [
+    "East",
+    46023,
+    "A",
+    70,
+    250,
+    17500
+   ],
+   [
+    "East",
+    46054,
+    "A",
+    65,
+    250,
+    16250
+   ],
+   [
+    "East",
+    46082,
+    "B",
+    40,
+    400,
+    16000
+   ],
+   [
+    "West",
+    46023,
+    "B",
+    130,
+    400,
+    52000
+   ],
+   [
+    "West",
+    46054,
+    "B",
+    90,
+    400,
+    36000
+   ],
+   [
+    "West",
+    46082,
+    "A",
+    105,
+    250,
+    26250
+   ]
+  ],
+  "parts": "F2:F13,A2:A13,B2:B13,EAST",
+  "expect": "formula"
+ },
+ {
+  "id": "F07",
+  "row": 8,
+  "skill": "Lookup",
+  "prompt": "Which region had the single highest revenue in one row?",
+  "fn": "formula",
+  "contextAddress": "Sales!A1:F13",
+  "context": [
+   [
+    "Region",
+    "Month",
+    "Product",
+    "Units",
+    "Unit price (Rs)",
+    "Revenue (Rs)"
+   ],
+   [
+    "North",
+    46023,
+    "A",
+    120,
+    250,
+    30000
+   ],
+   [
+    "North",
+    46054,
+    "B",
+    80,
+    400,
+    32000
+   ],
+   [
+    "North",
+    46082,
+    "A",
+    95,
+    250,
+    23750
+   ],
+   [
+    "South",
+    46023,
+    "B",
+    60,
+    400,
+    24000
+   ],
+   [
+    "South",
+    46054,
+    "A",
+    150,
+    250,
+    37500
+   ],
+   [
+    "South",
+    46082,
+    "B",
+    110,
+    400,
+    44000
+   ],
+   [
+    "East",
+    46023,
+    "A",
+    70,
+    250,
+    17500
+   ],
+   [
+    "East",
+    46054,
+    "A",
+    65,
+    250,
+    16250
+   ],
+   [
+    "East",
+    46082,
+    "B",
+    40,
+    400,
+    16000
+   ],
+   [
+    "West",
+    46023,
+    "B",
+    130,
+    400,
+    52000
+   ],
+   [
+    "West",
+    46054,
+    "B",
+    90,
+    400,
+    36000
+   ],
+   [
+    "West",
+    46082,
+    "A",
+    105,
+    250,
+    26250
+   ]
+  ],
+  "parts": "MAX,F2:F13,A2:A13",
+  "expect": "formula"
+ },
+ {
+  "id": "F08",
+  "row": 9,
+  "skill": "Row formula",
+  "prompt": "Revenue for row 2 from units and unit price.",
+  "fn": "formula",
+  "contextAddress": "Sales!A1:F13",
+  "context": [
+   [
+    "Region",
+    "Month",
+    "Product",
+    "Units",
+    "Unit price (Rs)",
+    "Revenue (Rs)"
+   ],
+   [
+    "North",
+    46023,
+    "A",
+    120,
+    250,
+    30000
+   ],
+   [
+    "North",
+    46054,
+    "B",
+    80,
+    400,
+    32000
+   ],
+   [
+    "North",
+    46082,
+    "A",
+    95,
+    250,
+    23750
+   ],
+   [
+    "South",
+    46023,
+    "B",
+    60,
+    400,
+    24000
+   ],
+   [
+    "South",
+    46054,
+    "A",
+    150,
+    250,
+    37500
+   ],
+   [
+    "South",
+    46082,
+    "B",
+    110,
+    400,
+    44000
+   ],
+   [
+    "East",
+    46023,
+    "A",
+    70,
+    250,
+    17500
+   ],
+   [
+    "East",
+    46054,
+    "A",
+    65,
+    250,
+    16250
+   ],
+   [
+    "East",
+    46082,
+    "B",
+    40,
+    400,
+    16000
+   ],
+   [
+    "West",
+    46023,
+    "B",
+    130,
+    400,
+    52000
+   ],
+   [
+    "West",
+    46054,
+    "B",
+    90,
+    400,
+    36000
+   ],
+   [
+    "West",
+    46082,
+    "A",
+    105,
+    250,
+    26250
+   ]
+  ],
+  "parts": "D2,E2,*",
+  "expect": "formula"
+ },
+ {
+  "id": "F09",
+  "row": 10,
+  "skill": "Row formula",
+  "prompt": "Revenue in row 2 with 18% GST added.",
+  "fn": "formula",
+  "contextAddress": "Sales!A1:F13",
+  "context": [
+   [
+    "Region",
+    "Month",
+    "Product",
+    "Units",
+    "Unit price (Rs)",
+    "Revenue (Rs)"
+   ],
+   [
+    "North",
+    46023,
+    "A",
+    120,
+    250,
+    30000
+   ],
+   [
+    "North",
+    46054,
+    "B",
+    80,
+    400,
+    32000
+   ],
+   [
+    "North",
+    46082,
+    "A",
+    95,
+    250,
+    23750
+   ],
+   [
+    "South",
+    46023,
+    "B",
+    60,
+    400,
+    24000
+   ],
+   [
+    "South",
+    46054,
+    "A",
+    150,
+    250,
+    37500
+   ],
+   [
+    "South",
+    46082,
+    "B",
+    110,
+    400,
+    44000
+   ],
+   [
+    "East",
+    46023,
+    "A",
+    70,
+    250,
+    17500
+   ],
+   [
+    "East",
+    46054,
+    "A",
+    65,
+    250,
+    16250
+   ],
+   [
+    "East",
+    46082,
+    "B",
+    40,
+    400,
+    16000
+   ],
+   [
+    "West",
+    46023,
+    "B",
+    130,
+    400,
+    52000
+   ],
+   [
+    "West",
+    46054,
+    "B",
+    90,
+    400,
+    36000
+   ],
+   [
+    "West",
+    46082,
+    "A",
+    105,
+    250,
+    26250
+   ]
+  ],
+  "parts": "F2,18",
+  "expect": "formula"
+ },
+ {
+  "id": "F10",
+  "row": 11,
+  "skill": "Logic",
+  "prompt": "Show High if units in row 3 are 100 or more, otherwise Low.",
+  "fn": "formula",
+  "contextAddress": "Sales!A1:F13",
+  "context": [
+   [
+    "Region",
+    "Month",
+    "Product",
+    "Units",
+    "Unit price (Rs)",
+    "Revenue (Rs)"
+   ],
+   [
+    "North",
+    46023,
+    "A",
+    120,
+    250,
+    30000
+   ],
+   [
+    "North",
+    46054,
+    "B",
+    80,
+    400,
+    32000
+   ],
+   [
+    "North",
+    46082,
+    "A",
+    95,
+    250,
+    23750
+   ],
+   [
+    "South",
+    46023,
+    "B",
+    60,
+    400,
+    24000
+   ],
+   [
+    "South",
+    46054,
+    "A",
+    150,
+    250,
+    37500
+   ],
+   [
+    "South",
+    46082,
+    "B",
+    110,
+    400,
+    44000
+   ],
+   [
+    "East",
+    46023,
+    "A",
+    70,
+    250,
+    17500
+   ],
+   [
+    "East",
+    46054,
+    "A",
+    65,
+    250,
+    16250
+   ],
+   [
+    "East",
+    46082,
+    "B",
+    40,
+    400,
+    16000
+   ],
+   [
+    "West",
+    46023,
+    "B",
+    130,
+    400,
+    52000
+   ],
+   [
+    "West",
+    46054,
+    "B",
+    90,
+    400,
+    36000
+   ],
+   [
+    "West",
+    46082,
+    "A",
+    105,
+    250,
+    26250
+   ]
+  ],
+  "parts": "IF(,D3,100,HIGH,LOW",
+  "expect": "formula"
+ },
+ {
+  "id": "F11",
+  "row": 12,
+  "skill": "Absolute refs",
+  "prompt": "Row 2's share of total revenue, as a formula I can drag down to row 13.",
+  "fn": "formula",
+  "contextAddress": "Sales!A1:F13",
+  "context": [
+   [
+    "Region",
+    "Month",
+    "Product",
+    "Units",
+    "Unit price (Rs)",
+    "Revenue (Rs)"
+   ],
+   [
+    "North",
+    46023,
+    "A",
+    120,
+    250,
+    30000
+   ],
+   [
+    "North",
+    46054,
+    "B",
+    80,
+    400,
+    32000
+   ],
+   [
+    "North",
+    46082,
+    "A",
+    95,
+    250,
+    23750
+   ],
+   [
+    "South",
+    46023,
+    "B",
+    60,
+    400,
+    24000
+   ],
+   [
+    "South",
+    46054,
+    "A",
+    150,
+    250,
+    37500
+   ],
+   [
+    "South",
+    46082,
+    "B",
+    110,
+    400,
+    44000
+   ],
+   [
+    "East",
+    46023,
+    "A",
+    70,
+    250,
+    17500
+   ],
+   [
+    "East",
+    46054,
+    "A",
+    65,
+    250,
+    16250
+   ],
+   [
+    "East",
+    46082,
+    "B",
+    40,
+    400,
+    16000
+   ],
+   [
+    "West",
+    46023,
+    "B",
+    130,
+    400,
+    52000
+   ],
+   [
+    "West",
+    46054,
+    "B",
+    90,
+    400,
+    36000
+   ],
+   [
+    "West",
+    46082,
+    "A",
+    105,
+    250,
+    26250
+   ]
+  ],
+  "parts": "F2/,$F$2:$F$13",
+  "expect": "formula"
+ },
+ {
+  "id": "F12",
+  "row": 13,
+  "skill": "Date",
+  "prompt": "Full month name from the date in row 2.",
+  "fn": "formula",
+  "contextAddress": "Sales!A1:F13",
+  "context": [
+   [
+    "Region",
+    "Month",
+    "Product",
+    "Units",
+    "Unit price (Rs)",
+    "Revenue (Rs)"
+   ],
+   [
+    "North",
+    46023,
+    "A",
+    120,
+    250,
+    30000
+   ],
+   [
+    "North",
+    46054,
+    "B",
+    80,
+    400,
+    32000
+   ],
+   [
+    "North",
+    46082,
+    "A",
+    95,
+    250,
+    23750
+   ],
+   [
+    "South",
+    46023,
+    "B",
+    60,
+    400,
+    24000
+   ],
+   [
+    "South",
+    46054,
+    "A",
+    150,
+    250,
+    37500
+   ],
+   [
+    "South",
+    46082,
+    "B",
+    110,
+    400,
+    44000
+   ],
+   [
+    "East",
+    46023,
+    "A",
+    70,
+    250,
+    17500
+   ],
+   [
+    "East",
+    46054,
+    "A",
+    65,
+    250,
+    16250
+   ],
+   [
+    "East",
+    46082,
+    "B",
+    40,
+    400,
+    16000
+   ],
+   [
+    "West",
+    46023,
+    "B",
+    130,
+    400,
+    52000
+   ],
+   [
+    "West",
+    46054,
+    "B",
+    90,
+    400,
+    36000
+   ],
+   [
+    "West",
+    46082,
+    "A",
+    105,
+    250,
+    26250
+   ]
+  ],
+  "parts": "TEXT,B2,MMMM",
+  "expect": "formula"
+ },
+ {
+  "id": "F13",
+  "row": 14,
+  "skill": "Distinct count",
+  "prompt": "How many different regions are there?",
+  "fn": "formula",
+  "contextAddress": "Sales!A1:F13",
+  "context": [
+   [
+    "Region",
+    "Month",
+    "Product",
+    "Units",
+    "Unit price (Rs)",
+    "Revenue (Rs)"
+   ],
+   [
+    "North",
+    46023,
+    "A",
+    120,
+    250,
+    30000
+   ],
+   [
+    "North",
+    46054,
+    "B",
+    80,
+    400,
+    32000
+   ],
+   [
+    "North",
+    46082,
+    "A",
+    95,
+    250,
+    23750
+   ],
+   [
+    "South",
+    46023,
+    "B",
+    60,
+    400,
+    24000
+   ],
+   [
+    "South",
+    46054,
+    "A",
+    150,
+    250,
+    37500
+   ],
+   [
+    "South",
+    46082,
+    "B",
+    110,
+    400,
+    44000
+   ],
+   [
+    "East",
+    46023,
+    "A",
+    70,
+    250,
+    17500
+   ],
+   [
+    "East",
+    46054,
+    "A",
+    65,
+    250,
+    16250
+   ],
+   [
+    "East",
+    46082,
+    "B",
+    40,
+    400,
+    16000
+   ],
+   [
+    "West",
+    46023,
+    "B",
+    130,
+    400,
+    52000
+   ],
+   [
+    "West",
+    46054,
+    "B",
+    90,
+    400,
+    36000
+   ],
+   [
+    "West",
+    46082,
+    "A",
+    105,
+    250,
+    26250
+   ]
+  ],
+  "parts": "A2:A13",
+  "expect": "formula"
+ },
+ {
+  "id": "F14",
+  "row": 15,
+  "skill": "Error handling",
+  "prompt": "Unit price of product C; show Not found if it doesn't exist.",
+  "fn": "formula",
+  "contextAddress": "Sales!A1:F13",
+  "context": [
+   [
+    "Region",
+    "Month",
+    "Product",
+    "Units",
+    "Unit price (Rs)",
+    "Revenue (Rs)"
+   ],
+   [
+    "North",
+    46023,
+    "A",
+    120,
+    250,
+    30000
+   ],
+   [
+    "North",
+    46054,
+    "B",
+    80,
+    400,
+    32000
+   ],
+   [
+    "North",
+    46082,
+    "A",
+    95,
+    250,
+    23750
+   ],
+   [
+    "South",
+    46023,
+    "B",
+    60,
+    400,
+    24000
+   ],
+   [
+    "South",
+    46054,
+    "A",
+    150,
+    250,
+    37500
+   ],
+   [
+    "South",
+    46082,
+    "B",
+    110,
+    400,
+    44000
+   ],
+   [
+    "East",
+    46023,
+    "A",
+    70,
+    250,
+    17500
+   ],
+   [
+    "East",
+    46054,
+    "A",
+    65,
+    250,
+    16250
+   ],
+   [
+    "East",
+    46082,
+    "B",
+    40,
+    400,
+    16000
+   ],
+   [
+    "West",
+    46023,
+    "B",
+    130,
+    400,
+    52000
+   ],
+   [
+    "West",
+    46054,
+    "B",
+    90,
+    400,
+    36000
+   ],
+   [
+    "West",
+    46082,
+    "A",
+    105,
+    250,
+    26250
+   ]
+  ],
+  "parts": "IFERROR,NOT FOUND,C2:C13",
+  "expect": "formula"
+ },
+ {
+  "id": "F15",
+  "row": 16,
+  "skill": "Text",
+  "prompt": "Domain part of the email in row 2 (the text after the @).",
+  "fn": "formula",
+  "contextAddress": "Contacts!A1:E5",
+  "context": [
+   [
+    "ID",
+    "Raw text",
+    "Ideal email",
+    "Ideal phone (10 digits)",
+    "Ideal city"
+   ],
+   [
+    "C1",
+    "Ping Ravi Kumar at ravi.k@finlogix.in or 98201 33445, he's in Pune.",
+    "ravi.k@finlogix.in",
+    "9820133445",
+    "Pune"
+   ],
+   [
+    "C2",
+    "Meera (meera_s@outlook.com), Chennai office, mobile +91-94440-11872",
+    "meera_s@outlook.com",
+    "9444011872",
+    "Chennai"
+   ],
+   [
+    "C3",
+    "Call Arjun on +91 99000 12345 \u2014 Bengaluru team. No email on file.",
+    "NONE",
+    "9900012345",
+    "Bengaluru"
+   ],
+   [
+    "C4",
+    "Invoice queries: accounts.payable@acme-corp.in (Hyderabad HQ)",
+    "accounts.payable@acme-corp.in",
+    "NONE",
+    "Hyderabad"
+   ]
+  ],
+  "parts": "C2,@",
+  "expect": "formula"
+ },
+ {
+  "id": "F16",
+  "row": 17,
+  "skill": "Explain",
+  "prompt": "Explain in one sentence what this formula does: =SUMIFS(F2:F13,A2:A13,\"West\",C2:C13,\"B\")",
+  "fn": "ask",
+  "contextAddress": "Sales!A1:F13",
+  "context": [
+   [
+    "Region",
+    "Month",
+    "Product",
+    "Units",
+    "Unit price (Rs)",
+    "Revenue (Rs)"
+   ],
+   [
+    "North",
+    46023,
+    "A",
+    120,
+    250,
+    30000
+   ],
+   [
+    "North",
+    46054,
+    "B",
+    80,
+    400,
+    32000
+   ],
+   [
+    "North",
+    46082,
+    "A",
+    95,
+    250,
+    23750
+   ],
+   [
+    "South",
+    46023,
+    "B",
+    60,
+    400,
+    24000
+   ],
+   [
+    "South",
+    46054,
+    "A",
+    150,
+    250,
+    37500
+   ],
+   [
+    "South",
+    46082,
+    "B",
+    110,
+    400,
+    44000
+   ],
+   [
+    "East",
+    46023,
+    "A",
+    70,
+    250,
+    17500
+   ],
+   [
+    "East",
+    46054,
+    "A",
+    65,
+    250,
+    16250
+   ],
+   [
+    "East",
+    46082,
+    "B",
+    40,
+    400,
+    16000
+   ],
+   [
+    "West",
+    46023,
+    "B",
+    130,
+    400,
+    52000
+   ],
+   [
+    "West",
+    46054,
+    "B",
+    90,
+    400,
+    36000
+   ],
+   [
+    "West",
+    46082,
+    "A",
+    105,
+    250,
+    26250
+   ]
+  ],
+  "parts": "WEST,REVENUE",
+  "expect": "text"
+ },
+ {
+  "id": "F17",
+  "row": 18,
+  "skill": "Fix",
+  "prompt": "This formula returns #VALUE!: =SUM(F2:F13)+\"Total\". Give a corrected formula for total revenue.",
+  "fn": "formula",
+  "contextAddress": "Sales!A1:F13",
+  "context": [
+   [
+    "Region",
+    "Month",
+    "Product",
+    "Units",
+    "Unit price (Rs)",
+    "Revenue (Rs)"
+   ],
+   [
+    "North",
+    46023,
+    "A",
+    120,
+    250,
+    30000
+   ],
+   [
+    "North",
+    46054,
+    "B",
+    80,
+    400,
+    32000
+   ],
+   [
+    "North",
+    46082,
+    "A",
+    95,
+    250,
+    23750
+   ],
+   [
+    "South",
+    46023,
+    "B",
+    60,
+    400,
+    24000
+   ],
+   [
+    "South",
+    46054,
+    "A",
+    150,
+    250,
+    37500
+   ],
+   [
+    "South",
+    46082,
+    "B",
+    110,
+    400,
+    44000
+   ],
+   [
+    "East",
+    46023,
+    "A",
+    70,
+    250,
+    17500
+   ],
+   [
+    "East",
+    46054,
+    "A",
+    65,
+    250,
+    16250
+   ],
+   [
+    "East",
+    46082,
+    "B",
+    40,
+    400,
+    16000
+   ],
+   [
+    "West",
+    46023,
+    "B",
+    130,
+    400,
+    52000
+   ],
+   [
+    "West",
+    46054,
+    "B",
+    90,
+    400,
+    36000
+   ],
+   [
+    "West",
+    46082,
+    "A",
+    105,
+    250,
+    26250
+   ]
+  ],
+  "parts": "SUM,F2:F13",
+  "expect": "formula"
+ },
+ {
+  "id": "F18",
+  "row": 19,
+  "skill": "No context",
+  "prompt": "Count the non-empty cells in B2:B50.",
+  "fn": "formula",
+  "contextAddress": null,
+  "context": null,
+  "parts": "COUNTA,B2:B50",
+  "expect": "formula"
+ },
+ {
+  "id": "F19",
+  "row": 20,
+  "skill": "Clean text",
+  "prompt": "Clean up the name in row 2: remove extra spaces and make it Proper Case.",
+  "fn": "formula",
+  "contextAddress": "Messy!A1:F11",
+  "context": [
+   [
+    "ID",
+    "Name",
+    "Phone",
+    "Joined (text)",
+    "Amount (text)",
+    "Email"
+   ],
+   [
+    101,
+    "  rahul SHARMA ",
+    "98201-33445",
+    "05/01/2026",
+    "Rs 1,250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    102,
+    "Priya  Nair",
+    "+91 99000 12345",
+    "2026-01-17",
+    "\u20b9 980",
+    "priya.nair@outlook.com"
+   ],
+   [
+    103,
+    "ANIL kumar",
+    "(022) 2811 0099",
+    "17-Jan-2026",
+    "2,400.50",
+    " anil.k@yahoo.in"
+   ],
+   [
+    104,
+    "meera iyer",
+    "9444011872",
+    "1/3/2026",
+    "N/A",
+    "MEERA.IYER@GMAIL.COM"
+   ],
+   [
+    105,
+    "Rahul Sharma",
+    "98201 33445",
+    "05-01-2026",
+    "1250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    106,
+    "Dev Patel",
+    "",
+    "2026-02-02",
+    "750",
+    "dev.patel@gmail.com"
+   ],
+   [
+    107,
+    "sana  KHAN",
+    "",
+    "2026-02-10",
+    "",
+    "sana.khan@proton.me"
+   ],
+   [
+    108,
+    "Arjun Rao",
+    "080-4123-9876",
+    "2026-02-14",
+    "Rs. 3,100",
+    "arjun.rao@zoho.com"
+   ],
+   [
+    109,
+    "kavya menon ",
+    "+91-98450-11223",
+    "2026-03-01",
+    "1,050",
+    "kavya.m@gmail.com"
+   ],
+   [
+    110,
+    "Rohit Verma",
+    "99887 66554",
+    "2026-03-05",
+    "\u20b92,000",
+    "rohit.verma@gmail.com"
+   ]
+  ],
+  "parts": "PROPER,TRIM,B2",
+  "expect": "formula"
+ },
+ {
+  "id": "F20",
+  "row": 21,
+  "skill": "Clean text",
+  "prompt": "Remove the extra spaces from the name in row 3.",
+  "fn": "formula",
+  "contextAddress": "Messy!A1:F11",
+  "context": [
+   [
+    "ID",
+    "Name",
+    "Phone",
+    "Joined (text)",
+    "Amount (text)",
+    "Email"
+   ],
+   [
+    101,
+    "  rahul SHARMA ",
+    "98201-33445",
+    "05/01/2026",
+    "Rs 1,250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    102,
+    "Priya  Nair",
+    "+91 99000 12345",
+    "2026-01-17",
+    "\u20b9 980",
+    "priya.nair@outlook.com"
+   ],
+   [
+    103,
+    "ANIL kumar",
+    "(022) 2811 0099",
+    "17-Jan-2026",
+    "2,400.50",
+    " anil.k@yahoo.in"
+   ],
+   [
+    104,
+    "meera iyer",
+    "9444011872",
+    "1/3/2026",
+    "N/A",
+    "MEERA.IYER@GMAIL.COM"
+   ],
+   [
+    105,
+    "Rahul Sharma",
+    "98201 33445",
+    "05-01-2026",
+    "1250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    106,
+    "Dev Patel",
+    "",
+    "2026-02-02",
+    "750",
+    "dev.patel@gmail.com"
+   ],
+   [
+    107,
+    "sana  KHAN",
+    "",
+    "2026-02-10",
+    "",
+    "sana.khan@proton.me"
+   ],
+   [
+    108,
+    "Arjun Rao",
+    "080-4123-9876",
+    "2026-02-14",
+    "Rs. 3,100",
+    "arjun.rao@zoho.com"
+   ],
+   [
+    109,
+    "kavya menon ",
+    "+91-98450-11223",
+    "2026-03-01",
+    "1,050",
+    "kavya.m@gmail.com"
+   ],
+   [
+    110,
+    "Rohit Verma",
+    "99887 66554",
+    "2026-03-05",
+    "\u20b92,000",
+    "rohit.verma@gmail.com"
+   ]
+  ],
+  "parts": "TRIM,B3",
+  "expect": "formula"
+ },
+ {
+  "id": "F21",
+  "row": 22,
+  "skill": "Clean numbers",
+  "prompt": "Turn the phone in row 3 into exactly 10 digits (no spaces, dashes or country code).",
+  "fn": "formula",
+  "contextAddress": "Messy!A1:F11",
+  "context": [
+   [
+    "ID",
+    "Name",
+    "Phone",
+    "Joined (text)",
+    "Amount (text)",
+    "Email"
+   ],
+   [
+    101,
+    "  rahul SHARMA ",
+    "98201-33445",
+    "05/01/2026",
+    "Rs 1,250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    102,
+    "Priya  Nair",
+    "+91 99000 12345",
+    "2026-01-17",
+    "\u20b9 980",
+    "priya.nair@outlook.com"
+   ],
+   [
+    103,
+    "ANIL kumar",
+    "(022) 2811 0099",
+    "17-Jan-2026",
+    "2,400.50",
+    " anil.k@yahoo.in"
+   ],
+   [
+    104,
+    "meera iyer",
+    "9444011872",
+    "1/3/2026",
+    "N/A",
+    "MEERA.IYER@GMAIL.COM"
+   ],
+   [
+    105,
+    "Rahul Sharma",
+    "98201 33445",
+    "05-01-2026",
+    "1250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    106,
+    "Dev Patel",
+    "",
+    "2026-02-02",
+    "750",
+    "dev.patel@gmail.com"
+   ],
+   [
+    107,
+    "sana  KHAN",
+    "",
+    "2026-02-10",
+    "",
+    "sana.khan@proton.me"
+   ],
+   [
+    108,
+    "Arjun Rao",
+    "080-4123-9876",
+    "2026-02-14",
+    "Rs. 3,100",
+    "arjun.rao@zoho.com"
+   ],
+   [
+    109,
+    "kavya menon ",
+    "+91-98450-11223",
+    "2026-03-01",
+    "1,050",
+    "kavya.m@gmail.com"
+   ],
+   [
+    110,
+    "Rohit Verma",
+    "99887 66554",
+    "2026-03-05",
+    "\u20b92,000",
+    "rohit.verma@gmail.com"
+   ]
+  ],
+  "parts": "C3,SUBSTITUTE",
+  "expect": "formula"
+ },
+ {
+  "id": "F22",
+  "row": 23,
+  "skill": "Clean numbers",
+  "prompt": "Convert the amount in row 2 to a real number.",
+  "fn": "formula",
+  "contextAddress": "Messy!A1:F11",
+  "context": [
+   [
+    "ID",
+    "Name",
+    "Phone",
+    "Joined (text)",
+    "Amount (text)",
+    "Email"
+   ],
+   [
+    101,
+    "  rahul SHARMA ",
+    "98201-33445",
+    "05/01/2026",
+    "Rs 1,250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    102,
+    "Priya  Nair",
+    "+91 99000 12345",
+    "2026-01-17",
+    "\u20b9 980",
+    "priya.nair@outlook.com"
+   ],
+   [
+    103,
+    "ANIL kumar",
+    "(022) 2811 0099",
+    "17-Jan-2026",
+    "2,400.50",
+    " anil.k@yahoo.in"
+   ],
+   [
+    104,
+    "meera iyer",
+    "9444011872",
+    "1/3/2026",
+    "N/A",
+    "MEERA.IYER@GMAIL.COM"
+   ],
+   [
+    105,
+    "Rahul Sharma",
+    "98201 33445",
+    "05-01-2026",
+    "1250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    106,
+    "Dev Patel",
+    "",
+    "2026-02-02",
+    "750",
+    "dev.patel@gmail.com"
+   ],
+   [
+    107,
+    "sana  KHAN",
+    "",
+    "2026-02-10",
+    "",
+    "sana.khan@proton.me"
+   ],
+   [
+    108,
+    "Arjun Rao",
+    "080-4123-9876",
+    "2026-02-14",
+    "Rs. 3,100",
+    "arjun.rao@zoho.com"
+   ],
+   [
+    109,
+    "kavya menon ",
+    "+91-98450-11223",
+    "2026-03-01",
+    "1,050",
+    "kavya.m@gmail.com"
+   ],
+   [
+    110,
+    "Rohit Verma",
+    "99887 66554",
+    "2026-03-05",
+    "\u20b92,000",
+    "rohit.verma@gmail.com"
+   ]
+  ],
+  "parts": "E2,SUBSTITUTE",
+  "expect": "formula"
+ },
+ {
+  "id": "F23",
+  "row": 24,
+  "skill": "Clean numbers",
+  "prompt": "Convert the amount in row 5 to a number; use 0 if it isn't a valid number.",
+  "fn": "formula",
+  "contextAddress": "Messy!A1:F11",
+  "context": [
+   [
+    "ID",
+    "Name",
+    "Phone",
+    "Joined (text)",
+    "Amount (text)",
+    "Email"
+   ],
+   [
+    101,
+    "  rahul SHARMA ",
+    "98201-33445",
+    "05/01/2026",
+    "Rs 1,250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    102,
+    "Priya  Nair",
+    "+91 99000 12345",
+    "2026-01-17",
+    "\u20b9 980",
+    "priya.nair@outlook.com"
+   ],
+   [
+    103,
+    "ANIL kumar",
+    "(022) 2811 0099",
+    "17-Jan-2026",
+    "2,400.50",
+    " anil.k@yahoo.in"
+   ],
+   [
+    104,
+    "meera iyer",
+    "9444011872",
+    "1/3/2026",
+    "N/A",
+    "MEERA.IYER@GMAIL.COM"
+   ],
+   [
+    105,
+    "Rahul Sharma",
+    "98201 33445",
+    "05-01-2026",
+    "1250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    106,
+    "Dev Patel",
+    "",
+    "2026-02-02",
+    "750",
+    "dev.patel@gmail.com"
+   ],
+   [
+    107,
+    "sana  KHAN",
+    "",
+    "2026-02-10",
+    "",
+    "sana.khan@proton.me"
+   ],
+   [
+    108,
+    "Arjun Rao",
+    "080-4123-9876",
+    "2026-02-14",
+    "Rs. 3,100",
+    "arjun.rao@zoho.com"
+   ],
+   [
+    109,
+    "kavya menon ",
+    "+91-98450-11223",
+    "2026-03-01",
+    "1,050",
+    "kavya.m@gmail.com"
+   ],
+   [
+    110,
+    "Rohit Verma",
+    "99887 66554",
+    "2026-03-05",
+    "\u20b92,000",
+    "rohit.verma@gmail.com"
+   ]
+  ],
+  "parts": "IFERROR,E5",
+  "expect": "formula"
+ },
+ {
+  "id": "F24",
+  "row": 25,
+  "skill": "Clean text",
+  "prompt": "Clean the email in row 2: lowercase and no stray spaces.",
+  "fn": "formula",
+  "contextAddress": "Messy!A1:F11",
+  "context": [
+   [
+    "ID",
+    "Name",
+    "Phone",
+    "Joined (text)",
+    "Amount (text)",
+    "Email"
+   ],
+   [
+    101,
+    "  rahul SHARMA ",
+    "98201-33445",
+    "05/01/2026",
+    "Rs 1,250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    102,
+    "Priya  Nair",
+    "+91 99000 12345",
+    "2026-01-17",
+    "\u20b9 980",
+    "priya.nair@outlook.com"
+   ],
+   [
+    103,
+    "ANIL kumar",
+    "(022) 2811 0099",
+    "17-Jan-2026",
+    "2,400.50",
+    " anil.k@yahoo.in"
+   ],
+   [
+    104,
+    "meera iyer",
+    "9444011872",
+    "1/3/2026",
+    "N/A",
+    "MEERA.IYER@GMAIL.COM"
+   ],
+   [
+    105,
+    "Rahul Sharma",
+    "98201 33445",
+    "05-01-2026",
+    "1250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    106,
+    "Dev Patel",
+    "",
+    "2026-02-02",
+    "750",
+    "dev.patel@gmail.com"
+   ],
+   [
+    107,
+    "sana  KHAN",
+    "",
+    "2026-02-10",
+    "",
+    "sana.khan@proton.me"
+   ],
+   [
+    108,
+    "Arjun Rao",
+    "080-4123-9876",
+    "2026-02-14",
+    "Rs. 3,100",
+    "arjun.rao@zoho.com"
+   ],
+   [
+    109,
+    "kavya menon ",
+    "+91-98450-11223",
+    "2026-03-01",
+    "1,050",
+    "kavya.m@gmail.com"
+   ],
+   [
+    110,
+    "Rohit Verma",
+    "99887 66554",
+    "2026-03-05",
+    "\u20b92,000",
+    "rohit.verma@gmail.com"
+   ]
+  ],
+  "parts": "LOWER,TRIM,F2",
+  "expect": "formula"
+ },
+ {
+  "id": "F25",
+  "row": 26,
+  "skill": "Clean dates",
+  "prompt": "Convert the text date in row 3 into a real Excel date.",
+  "fn": "formula",
+  "contextAddress": "Messy!A1:F11",
+  "context": [
+   [
+    "ID",
+    "Name",
+    "Phone",
+    "Joined (text)",
+    "Amount (text)",
+    "Email"
+   ],
+   [
+    101,
+    "  rahul SHARMA ",
+    "98201-33445",
+    "05/01/2026",
+    "Rs 1,250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    102,
+    "Priya  Nair",
+    "+91 99000 12345",
+    "2026-01-17",
+    "\u20b9 980",
+    "priya.nair@outlook.com"
+   ],
+   [
+    103,
+    "ANIL kumar",
+    "(022) 2811 0099",
+    "17-Jan-2026",
+    "2,400.50",
+    " anil.k@yahoo.in"
+   ],
+   [
+    104,
+    "meera iyer",
+    "9444011872",
+    "1/3/2026",
+    "N/A",
+    "MEERA.IYER@GMAIL.COM"
+   ],
+   [
+    105,
+    "Rahul Sharma",
+    "98201 33445",
+    "05-01-2026",
+    "1250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    106,
+    "Dev Patel",
+    "",
+    "2026-02-02",
+    "750",
+    "dev.patel@gmail.com"
+   ],
+   [
+    107,
+    "sana  KHAN",
+    "",
+    "2026-02-10",
+    "",
+    "sana.khan@proton.me"
+   ],
+   [
+    108,
+    "Arjun Rao",
+    "080-4123-9876",
+    "2026-02-14",
+    "Rs. 3,100",
+    "arjun.rao@zoho.com"
+   ],
+   [
+    109,
+    "kavya menon ",
+    "+91-98450-11223",
+    "2026-03-01",
+    "1,050",
+    "kavya.m@gmail.com"
+   ],
+   [
+    110,
+    "Rohit Verma",
+    "99887 66554",
+    "2026-03-05",
+    "\u20b92,000",
+    "rohit.verma@gmail.com"
+   ]
+  ],
+  "parts": "D3",
+  "expect": "formula"
+ },
+ {
+  "id": "F26",
+  "row": 27,
+  "skill": "Split/combine",
+  "prompt": "First name only, in Proper Case, from the name in row 4.",
+  "fn": "formula",
+  "contextAddress": "Messy!A1:F11",
+  "context": [
+   [
+    "ID",
+    "Name",
+    "Phone",
+    "Joined (text)",
+    "Amount (text)",
+    "Email"
+   ],
+   [
+    101,
+    "  rahul SHARMA ",
+    "98201-33445",
+    "05/01/2026",
+    "Rs 1,250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    102,
+    "Priya  Nair",
+    "+91 99000 12345",
+    "2026-01-17",
+    "\u20b9 980",
+    "priya.nair@outlook.com"
+   ],
+   [
+    103,
+    "ANIL kumar",
+    "(022) 2811 0099",
+    "17-Jan-2026",
+    "2,400.50",
+    " anil.k@yahoo.in"
+   ],
+   [
+    104,
+    "meera iyer",
+    "9444011872",
+    "1/3/2026",
+    "N/A",
+    "MEERA.IYER@GMAIL.COM"
+   ],
+   [
+    105,
+    "Rahul Sharma",
+    "98201 33445",
+    "05-01-2026",
+    "1250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    106,
+    "Dev Patel",
+    "",
+    "2026-02-02",
+    "750",
+    "dev.patel@gmail.com"
+   ],
+   [
+    107,
+    "sana  KHAN",
+    "",
+    "2026-02-10",
+    "",
+    "sana.khan@proton.me"
+   ],
+   [
+    108,
+    "Arjun Rao",
+    "080-4123-9876",
+    "2026-02-14",
+    "Rs. 3,100",
+    "arjun.rao@zoho.com"
+   ],
+   [
+    109,
+    "kavya menon ",
+    "+91-98450-11223",
+    "2026-03-01",
+    "1,050",
+    "kavya.m@gmail.com"
+   ],
+   [
+    110,
+    "Rohit Verma",
+    "99887 66554",
+    "2026-03-05",
+    "\u20b92,000",
+    "rohit.verma@gmail.com"
+   ]
+  ],
+  "parts": "LEFT,FIND,B4",
+  "expect": "formula"
+ },
+ {
+  "id": "F27",
+  "row": 28,
+  "skill": "Split/combine",
+  "prompt": "Last name only, in Proper Case, from the name in row 5.",
+  "fn": "formula",
+  "contextAddress": "Messy!A1:F11",
+  "context": [
+   [
+    "ID",
+    "Name",
+    "Phone",
+    "Joined (text)",
+    "Amount (text)",
+    "Email"
+   ],
+   [
+    101,
+    "  rahul SHARMA ",
+    "98201-33445",
+    "05/01/2026",
+    "Rs 1,250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    102,
+    "Priya  Nair",
+    "+91 99000 12345",
+    "2026-01-17",
+    "\u20b9 980",
+    "priya.nair@outlook.com"
+   ],
+   [
+    103,
+    "ANIL kumar",
+    "(022) 2811 0099",
+    "17-Jan-2026",
+    "2,400.50",
+    " anil.k@yahoo.in"
+   ],
+   [
+    104,
+    "meera iyer",
+    "9444011872",
+    "1/3/2026",
+    "N/A",
+    "MEERA.IYER@GMAIL.COM"
+   ],
+   [
+    105,
+    "Rahul Sharma",
+    "98201 33445",
+    "05-01-2026",
+    "1250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    106,
+    "Dev Patel",
+    "",
+    "2026-02-02",
+    "750",
+    "dev.patel@gmail.com"
+   ],
+   [
+    107,
+    "sana  KHAN",
+    "",
+    "2026-02-10",
+    "",
+    "sana.khan@proton.me"
+   ],
+   [
+    108,
+    "Arjun Rao",
+    "080-4123-9876",
+    "2026-02-14",
+    "Rs. 3,100",
+    "arjun.rao@zoho.com"
+   ],
+   [
+    109,
+    "kavya menon ",
+    "+91-98450-11223",
+    "2026-03-01",
+    "1,050",
+    "kavya.m@gmail.com"
+   ],
+   [
+    110,
+    "Rohit Verma",
+    "99887 66554",
+    "2026-03-05",
+    "\u20b92,000",
+    "rohit.verma@gmail.com"
+   ]
+  ],
+  "parts": "FIND,B5",
+  "expect": "formula"
+ },
+ {
+  "id": "F28",
+  "row": 29,
+  "skill": "Duplicates/blanks",
+  "prompt": "Formula for row 6 that I can drag down: Duplicate if this email already appeared in an earlier row, otherwise Unique.",
+  "fn": "formula",
+  "contextAddress": "Messy!A1:F11",
+  "context": [
+   [
+    "ID",
+    "Name",
+    "Phone",
+    "Joined (text)",
+    "Amount (text)",
+    "Email"
+   ],
+   [
+    101,
+    "  rahul SHARMA ",
+    "98201-33445",
+    "05/01/2026",
+    "Rs 1,250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    102,
+    "Priya  Nair",
+    "+91 99000 12345",
+    "2026-01-17",
+    "\u20b9 980",
+    "priya.nair@outlook.com"
+   ],
+   [
+    103,
+    "ANIL kumar",
+    "(022) 2811 0099",
+    "17-Jan-2026",
+    "2,400.50",
+    " anil.k@yahoo.in"
+   ],
+   [
+    104,
+    "meera iyer",
+    "9444011872",
+    "1/3/2026",
+    "N/A",
+    "MEERA.IYER@GMAIL.COM"
+   ],
+   [
+    105,
+    "Rahul Sharma",
+    "98201 33445",
+    "05-01-2026",
+    "1250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    106,
+    "Dev Patel",
+    "",
+    "2026-02-02",
+    "750",
+    "dev.patel@gmail.com"
+   ],
+   [
+    107,
+    "sana  KHAN",
+    "",
+    "2026-02-10",
+    "",
+    "sana.khan@proton.me"
+   ],
+   [
+    108,
+    "Arjun Rao",
+    "080-4123-9876",
+    "2026-02-14",
+    "Rs. 3,100",
+    "arjun.rao@zoho.com"
+   ],
+   [
+    109,
+    "kavya menon ",
+    "+91-98450-11223",
+    "2026-03-01",
+    "1,050",
+    "kavya.m@gmail.com"
+   ],
+   [
+    110,
+    "Rohit Verma",
+    "99887 66554",
+    "2026-03-05",
+    "\u20b92,000",
+    "rohit.verma@gmail.com"
+   ]
+  ],
+  "parts": "COUNTIF,$F$2,F6,DUPLICATE,UNIQUE",
+  "expect": "formula"
+ },
+ {
+  "id": "F29",
+  "row": 30,
+  "skill": "Duplicates/blanks",
+  "prompt": "How many rows are missing a phone number?",
+  "fn": "formula",
+  "contextAddress": "Messy!A1:F11",
+  "context": [
+   [
+    "ID",
+    "Name",
+    "Phone",
+    "Joined (text)",
+    "Amount (text)",
+    "Email"
+   ],
+   [
+    101,
+    "  rahul SHARMA ",
+    "98201-33445",
+    "05/01/2026",
+    "Rs 1,250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    102,
+    "Priya  Nair",
+    "+91 99000 12345",
+    "2026-01-17",
+    "\u20b9 980",
+    "priya.nair@outlook.com"
+   ],
+   [
+    103,
+    "ANIL kumar",
+    "(022) 2811 0099",
+    "17-Jan-2026",
+    "2,400.50",
+    " anil.k@yahoo.in"
+   ],
+   [
+    104,
+    "meera iyer",
+    "9444011872",
+    "1/3/2026",
+    "N/A",
+    "MEERA.IYER@GMAIL.COM"
+   ],
+   [
+    105,
+    "Rahul Sharma",
+    "98201 33445",
+    "05-01-2026",
+    "1250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    106,
+    "Dev Patel",
+    "",
+    "2026-02-02",
+    "750",
+    "dev.patel@gmail.com"
+   ],
+   [
+    107,
+    "sana  KHAN",
+    "",
+    "2026-02-10",
+    "",
+    "sana.khan@proton.me"
+   ],
+   [
+    108,
+    "Arjun Rao",
+    "080-4123-9876",
+    "2026-02-14",
+    "Rs. 3,100",
+    "arjun.rao@zoho.com"
+   ],
+   [
+    109,
+    "kavya menon ",
+    "+91-98450-11223",
+    "2026-03-01",
+    "1,050",
+    "kavya.m@gmail.com"
+   ],
+   [
+    110,
+    "Rohit Verma",
+    "99887 66554",
+    "2026-03-05",
+    "\u20b92,000",
+    "rohit.verma@gmail.com"
+   ]
+  ],
+  "parts": "C2:C11",
+  "expect": "formula"
+ },
+ {
+  "id": "F30",
+  "row": 31,
+  "skill": "Split/combine",
+  "prompt": "Combine the name and email of row 7 as: Name <email>",
+  "fn": "formula",
+  "contextAddress": "Messy!A1:F11",
+  "context": [
+   [
+    "ID",
+    "Name",
+    "Phone",
+    "Joined (text)",
+    "Amount (text)",
+    "Email"
+   ],
+   [
+    101,
+    "  rahul SHARMA ",
+    "98201-33445",
+    "05/01/2026",
+    "Rs 1,250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    102,
+    "Priya  Nair",
+    "+91 99000 12345",
+    "2026-01-17",
+    "\u20b9 980",
+    "priya.nair@outlook.com"
+   ],
+   [
+    103,
+    "ANIL kumar",
+    "(022) 2811 0099",
+    "17-Jan-2026",
+    "2,400.50",
+    " anil.k@yahoo.in"
+   ],
+   [
+    104,
+    "meera iyer",
+    "9444011872",
+    "1/3/2026",
+    "N/A",
+    "MEERA.IYER@GMAIL.COM"
+   ],
+   [
+    105,
+    "Rahul Sharma",
+    "98201 33445",
+    "05-01-2026",
+    "1250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    106,
+    "Dev Patel",
+    "",
+    "2026-02-02",
+    "750",
+    "dev.patel@gmail.com"
+   ],
+   [
+    107,
+    "sana  KHAN",
+    "",
+    "2026-02-10",
+    "",
+    "sana.khan@proton.me"
+   ],
+   [
+    108,
+    "Arjun Rao",
+    "080-4123-9876",
+    "2026-02-14",
+    "Rs. 3,100",
+    "arjun.rao@zoho.com"
+   ],
+   [
+    109,
+    "kavya menon ",
+    "+91-98450-11223",
+    "2026-03-01",
+    "1,050",
+    "kavya.m@gmail.com"
+   ],
+   [
+    110,
+    "Rohit Verma",
+    "99887 66554",
+    "2026-03-05",
+    "\u20b92,000",
+    "rohit.verma@gmail.com"
+   ]
+  ],
+  "parts": "B7,F7",
+  "expect": "formula"
+ },
+ {
+  "id": "F31",
+  "row": 32,
+  "skill": "Held-out",
+  "prompt": "Initials of the name in row 9, in capitals (e.g. AR).",
+  "fn": "formula",
+  "contextAddress": "Messy!A1:F11",
+  "context": [
+   [
+    "ID",
+    "Name",
+    "Phone",
+    "Joined (text)",
+    "Amount (text)",
+    "Email"
+   ],
+   [
+    101,
+    "  rahul SHARMA ",
+    "98201-33445",
+    "05/01/2026",
+    "Rs 1,250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    102,
+    "Priya  Nair",
+    "+91 99000 12345",
+    "2026-01-17",
+    "\u20b9 980",
+    "priya.nair@outlook.com"
+   ],
+   [
+    103,
+    "ANIL kumar",
+    "(022) 2811 0099",
+    "17-Jan-2026",
+    "2,400.50",
+    " anil.k@yahoo.in"
+   ],
+   [
+    104,
+    "meera iyer",
+    "9444011872",
+    "1/3/2026",
+    "N/A",
+    "MEERA.IYER@GMAIL.COM"
+   ],
+   [
+    105,
+    "Rahul Sharma",
+    "98201 33445",
+    "05-01-2026",
+    "1250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    106,
+    "Dev Patel",
+    "",
+    "2026-02-02",
+    "750",
+    "dev.patel@gmail.com"
+   ],
+   [
+    107,
+    "sana  KHAN",
+    "",
+    "2026-02-10",
+    "",
+    "sana.khan@proton.me"
+   ],
+   [
+    108,
+    "Arjun Rao",
+    "080-4123-9876",
+    "2026-02-14",
+    "Rs. 3,100",
+    "arjun.rao@zoho.com"
+   ],
+   [
+    109,
+    "kavya menon ",
+    "+91-98450-11223",
+    "2026-03-01",
+    "1,050",
+    "kavya.m@gmail.com"
+   ],
+   [
+    110,
+    "Rohit Verma",
+    "99887 66554",
+    "2026-03-05",
+    "\u20b92,000",
+    "rohit.verma@gmail.com"
+   ]
+  ],
+  "parts": "B9,LEFT",
+  "expect": "formula"
+ },
+ {
+  "id": "F32",
+  "row": 33,
+  "skill": "Held-out",
+  "prompt": "Domain of the email in row 3 (the part after @), in lowercase.",
+  "fn": "formula",
+  "contextAddress": "Messy!A1:F11",
+  "context": [
+   [
+    "ID",
+    "Name",
+    "Phone",
+    "Joined (text)",
+    "Amount (text)",
+    "Email"
+   ],
+   [
+    101,
+    "  rahul SHARMA ",
+    "98201-33445",
+    "05/01/2026",
+    "Rs 1,250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    102,
+    "Priya  Nair",
+    "+91 99000 12345",
+    "2026-01-17",
+    "\u20b9 980",
+    "priya.nair@outlook.com"
+   ],
+   [
+    103,
+    "ANIL kumar",
+    "(022) 2811 0099",
+    "17-Jan-2026",
+    "2,400.50",
+    " anil.k@yahoo.in"
+   ],
+   [
+    104,
+    "meera iyer",
+    "9444011872",
+    "1/3/2026",
+    "N/A",
+    "MEERA.IYER@GMAIL.COM"
+   ],
+   [
+    105,
+    "Rahul Sharma",
+    "98201 33445",
+    "05-01-2026",
+    "1250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    106,
+    "Dev Patel",
+    "",
+    "2026-02-02",
+    "750",
+    "dev.patel@gmail.com"
+   ],
+   [
+    107,
+    "sana  KHAN",
+    "",
+    "2026-02-10",
+    "",
+    "sana.khan@proton.me"
+   ],
+   [
+    108,
+    "Arjun Rao",
+    "080-4123-9876",
+    "2026-02-14",
+    "Rs. 3,100",
+    "arjun.rao@zoho.com"
+   ],
+   [
+    109,
+    "kavya menon ",
+    "+91-98450-11223",
+    "2026-03-01",
+    "1,050",
+    "kavya.m@gmail.com"
+   ],
+   [
+    110,
+    "Rohit Verma",
+    "99887 66554",
+    "2026-03-05",
+    "\u20b92,000",
+    "rohit.verma@gmail.com"
+   ]
+  ],
+  "parts": "F3,@",
+  "expect": "formula"
+ },
+ {
+  "id": "F33",
+  "row": 34,
+  "skill": "Held-out",
+  "prompt": "Is the email in row 5 a Gmail address? Answer Yes or No.",
+  "fn": "formula",
+  "contextAddress": "Messy!A1:F11",
+  "context": [
+   [
+    "ID",
+    "Name",
+    "Phone",
+    "Joined (text)",
+    "Amount (text)",
+    "Email"
+   ],
+   [
+    101,
+    "  rahul SHARMA ",
+    "98201-33445",
+    "05/01/2026",
+    "Rs 1,250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    102,
+    "Priya  Nair",
+    "+91 99000 12345",
+    "2026-01-17",
+    "\u20b9 980",
+    "priya.nair@outlook.com"
+   ],
+   [
+    103,
+    "ANIL kumar",
+    "(022) 2811 0099",
+    "17-Jan-2026",
+    "2,400.50",
+    " anil.k@yahoo.in"
+   ],
+   [
+    104,
+    "meera iyer",
+    "9444011872",
+    "1/3/2026",
+    "N/A",
+    "MEERA.IYER@GMAIL.COM"
+   ],
+   [
+    105,
+    "Rahul Sharma",
+    "98201 33445",
+    "05-01-2026",
+    "1250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    106,
+    "Dev Patel",
+    "",
+    "2026-02-02",
+    "750",
+    "dev.patel@gmail.com"
+   ],
+   [
+    107,
+    "sana  KHAN",
+    "",
+    "2026-02-10",
+    "",
+    "sana.khan@proton.me"
+   ],
+   [
+    108,
+    "Arjun Rao",
+    "080-4123-9876",
+    "2026-02-14",
+    "Rs. 3,100",
+    "arjun.rao@zoho.com"
+   ],
+   [
+    109,
+    "kavya menon ",
+    "+91-98450-11223",
+    "2026-03-01",
+    "1,050",
+    "kavya.m@gmail.com"
+   ],
+   [
+    110,
+    "Rohit Verma",
+    "99887 66554",
+    "2026-03-05",
+    "\u20b92,000",
+    "rohit.verma@gmail.com"
+   ]
+  ],
+  "parts": "F5,GMAIL",
+  "expect": "formula"
+ },
+ {
+  "id": "F34",
+  "row": 35,
+  "skill": "Held-out",
+  "prompt": "Convert the amount in row 9 to a number.",
+  "fn": "formula",
+  "contextAddress": "Messy!A1:F11",
+  "context": [
+   [
+    "ID",
+    "Name",
+    "Phone",
+    "Joined (text)",
+    "Amount (text)",
+    "Email"
+   ],
+   [
+    101,
+    "  rahul SHARMA ",
+    "98201-33445",
+    "05/01/2026",
+    "Rs 1,250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    102,
+    "Priya  Nair",
+    "+91 99000 12345",
+    "2026-01-17",
+    "\u20b9 980",
+    "priya.nair@outlook.com"
+   ],
+   [
+    103,
+    "ANIL kumar",
+    "(022) 2811 0099",
+    "17-Jan-2026",
+    "2,400.50",
+    " anil.k@yahoo.in"
+   ],
+   [
+    104,
+    "meera iyer",
+    "9444011872",
+    "1/3/2026",
+    "N/A",
+    "MEERA.IYER@GMAIL.COM"
+   ],
+   [
+    105,
+    "Rahul Sharma",
+    "98201 33445",
+    "05-01-2026",
+    "1250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    106,
+    "Dev Patel",
+    "",
+    "2026-02-02",
+    "750",
+    "dev.patel@gmail.com"
+   ],
+   [
+    107,
+    "sana  KHAN",
+    "",
+    "2026-02-10",
+    "",
+    "sana.khan@proton.me"
+   ],
+   [
+    108,
+    "Arjun Rao",
+    "080-4123-9876",
+    "2026-02-14",
+    "Rs. 3,100",
+    "arjun.rao@zoho.com"
+   ],
+   [
+    109,
+    "kavya menon ",
+    "+91-98450-11223",
+    "2026-03-01",
+    "1,050",
+    "kavya.m@gmail.com"
+   ],
+   [
+    110,
+    "Rohit Verma",
+    "99887 66554",
+    "2026-03-05",
+    "\u20b92,000",
+    "rohit.verma@gmail.com"
+   ]
+  ],
+  "parts": "E9",
+  "expect": "formula"
+ },
+ {
+  "id": "F35",
+  "row": 36,
+  "skill": "Held-out",
+  "prompt": "How many of the emails are Gmail addresses?",
+  "fn": "formula",
+  "contextAddress": "Messy!A1:F11",
+  "context": [
+   [
+    "ID",
+    "Name",
+    "Phone",
+    "Joined (text)",
+    "Amount (text)",
+    "Email"
+   ],
+   [
+    101,
+    "  rahul SHARMA ",
+    "98201-33445",
+    "05/01/2026",
+    "Rs 1,250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    102,
+    "Priya  Nair",
+    "+91 99000 12345",
+    "2026-01-17",
+    "\u20b9 980",
+    "priya.nair@outlook.com"
+   ],
+   [
+    103,
+    "ANIL kumar",
+    "(022) 2811 0099",
+    "17-Jan-2026",
+    "2,400.50",
+    " anil.k@yahoo.in"
+   ],
+   [
+    104,
+    "meera iyer",
+    "9444011872",
+    "1/3/2026",
+    "N/A",
+    "MEERA.IYER@GMAIL.COM"
+   ],
+   [
+    105,
+    "Rahul Sharma",
+    "98201 33445",
+    "05-01-2026",
+    "1250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    106,
+    "Dev Patel",
+    "",
+    "2026-02-02",
+    "750",
+    "dev.patel@gmail.com"
+   ],
+   [
+    107,
+    "sana  KHAN",
+    "",
+    "2026-02-10",
+    "",
+    "sana.khan@proton.me"
+   ],
+   [
+    108,
+    "Arjun Rao",
+    "080-4123-9876",
+    "2026-02-14",
+    "Rs. 3,100",
+    "arjun.rao@zoho.com"
+   ],
+   [
+    109,
+    "kavya menon ",
+    "+91-98450-11223",
+    "2026-03-01",
+    "1,050",
+    "kavya.m@gmail.com"
+   ],
+   [
+    110,
+    "Rohit Verma",
+    "99887 66554",
+    "2026-03-05",
+    "\u20b92,000",
+    "rohit.verma@gmail.com"
+   ]
+  ],
+  "parts": "COUNTIF,F2:F11,GMAIL",
+  "expect": "formula"
+ },
+ {
+  "id": "F36",
+  "row": 37,
+  "skill": "Held-out",
+  "prompt": "Month name (e.g. January) of the join date in row 3.",
+  "fn": "formula",
+  "contextAddress": "Messy!A1:F11",
+  "context": [
+   [
+    "ID",
+    "Name",
+    "Phone",
+    "Joined (text)",
+    "Amount (text)",
+    "Email"
+   ],
+   [
+    101,
+    "  rahul SHARMA ",
+    "98201-33445",
+    "05/01/2026",
+    "Rs 1,250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    102,
+    "Priya  Nair",
+    "+91 99000 12345",
+    "2026-01-17",
+    "\u20b9 980",
+    "priya.nair@outlook.com"
+   ],
+   [
+    103,
+    "ANIL kumar",
+    "(022) 2811 0099",
+    "17-Jan-2026",
+    "2,400.50",
+    " anil.k@yahoo.in"
+   ],
+   [
+    104,
+    "meera iyer",
+    "9444011872",
+    "1/3/2026",
+    "N/A",
+    "MEERA.IYER@GMAIL.COM"
+   ],
+   [
+    105,
+    "Rahul Sharma",
+    "98201 33445",
+    "05-01-2026",
+    "1250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    106,
+    "Dev Patel",
+    "",
+    "2026-02-02",
+    "750",
+    "dev.patel@gmail.com"
+   ],
+   [
+    107,
+    "sana  KHAN",
+    "",
+    "2026-02-10",
+    "",
+    "sana.khan@proton.me"
+   ],
+   [
+    108,
+    "Arjun Rao",
+    "080-4123-9876",
+    "2026-02-14",
+    "Rs. 3,100",
+    "arjun.rao@zoho.com"
+   ],
+   [
+    109,
+    "kavya menon ",
+    "+91-98450-11223",
+    "2026-03-01",
+    "1,050",
+    "kavya.m@gmail.com"
+   ],
+   [
+    110,
+    "Rohit Verma",
+    "99887 66554",
+    "2026-03-05",
+    "\u20b92,000",
+    "rohit.verma@gmail.com"
+   ]
+  ],
+  "parts": "TEXT,D3,MMMM",
+  "expect": "formula"
+ },
+ {
+  "id": "F37",
+  "row": 38,
+  "skill": "Held-out",
+  "prompt": "Phone in row 9 with the dashes removed.",
+  "fn": "formula",
+  "contextAddress": "Messy!A1:F11",
+  "context": [
+   [
+    "ID",
+    "Name",
+    "Phone",
+    "Joined (text)",
+    "Amount (text)",
+    "Email"
+   ],
+   [
+    101,
+    "  rahul SHARMA ",
+    "98201-33445",
+    "05/01/2026",
+    "Rs 1,250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    102,
+    "Priya  Nair",
+    "+91 99000 12345",
+    "2026-01-17",
+    "\u20b9 980",
+    "priya.nair@outlook.com"
+   ],
+   [
+    103,
+    "ANIL kumar",
+    "(022) 2811 0099",
+    "17-Jan-2026",
+    "2,400.50",
+    " anil.k@yahoo.in"
+   ],
+   [
+    104,
+    "meera iyer",
+    "9444011872",
+    "1/3/2026",
+    "N/A",
+    "MEERA.IYER@GMAIL.COM"
+   ],
+   [
+    105,
+    "Rahul Sharma",
+    "98201 33445",
+    "05-01-2026",
+    "1250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    106,
+    "Dev Patel",
+    "",
+    "2026-02-02",
+    "750",
+    "dev.patel@gmail.com"
+   ],
+   [
+    107,
+    "sana  KHAN",
+    "",
+    "2026-02-10",
+    "",
+    "sana.khan@proton.me"
+   ],
+   [
+    108,
+    "Arjun Rao",
+    "080-4123-9876",
+    "2026-02-14",
+    "Rs. 3,100",
+    "arjun.rao@zoho.com"
+   ],
+   [
+    109,
+    "kavya menon ",
+    "+91-98450-11223",
+    "2026-03-01",
+    "1,050",
+    "kavya.m@gmail.com"
+   ],
+   [
+    110,
+    "Rohit Verma",
+    "99887 66554",
+    "2026-03-05",
+    "\u20b92,000",
+    "rohit.verma@gmail.com"
+   ]
+  ],
+  "parts": "C9,SUBSTITUTE",
+  "expect": "formula"
+ },
+ {
+  "id": "F38",
+  "row": 39,
+  "skill": "Held-out",
+  "prompt": "Length of the name in row 8 after removing extra spaces.",
+  "fn": "formula",
+  "contextAddress": "Messy!A1:F11",
+  "context": [
+   [
+    "ID",
+    "Name",
+    "Phone",
+    "Joined (text)",
+    "Amount (text)",
+    "Email"
+   ],
+   [
+    101,
+    "  rahul SHARMA ",
+    "98201-33445",
+    "05/01/2026",
+    "Rs 1,250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    102,
+    "Priya  Nair",
+    "+91 99000 12345",
+    "2026-01-17",
+    "\u20b9 980",
+    "priya.nair@outlook.com"
+   ],
+   [
+    103,
+    "ANIL kumar",
+    "(022) 2811 0099",
+    "17-Jan-2026",
+    "2,400.50",
+    " anil.k@yahoo.in"
+   ],
+   [
+    104,
+    "meera iyer",
+    "9444011872",
+    "1/3/2026",
+    "N/A",
+    "MEERA.IYER@GMAIL.COM"
+   ],
+   [
+    105,
+    "Rahul Sharma",
+    "98201 33445",
+    "05-01-2026",
+    "1250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    106,
+    "Dev Patel",
+    "",
+    "2026-02-02",
+    "750",
+    "dev.patel@gmail.com"
+   ],
+   [
+    107,
+    "sana  KHAN",
+    "",
+    "2026-02-10",
+    "",
+    "sana.khan@proton.me"
+   ],
+   [
+    108,
+    "Arjun Rao",
+    "080-4123-9876",
+    "2026-02-14",
+    "Rs. 3,100",
+    "arjun.rao@zoho.com"
+   ],
+   [
+    109,
+    "kavya menon ",
+    "+91-98450-11223",
+    "2026-03-01",
+    "1,050",
+    "kavya.m@gmail.com"
+   ],
+   [
+    110,
+    "Rohit Verma",
+    "99887 66554",
+    "2026-03-05",
+    "\u20b92,000",
+    "rohit.verma@gmail.com"
+   ]
+  ],
+  "parts": "LEN,TRIM,B8",
+  "expect": "formula"
+ },
+ {
+  "id": "F39",
+  "row": 40,
+  "skill": "Held-out v3",
+  "prompt": "Total revenue for product A in the North region.",
+  "fn": "formula",
+  "contextAddress": "Sales!A1:F13",
+  "context": [
+   [
+    "Region",
+    "Month",
+    "Product",
+    "Units",
+    "Unit price (Rs)",
+    "Revenue (Rs)"
+   ],
+   [
+    "North",
+    46023,
+    "A",
+    120,
+    250,
+    30000
+   ],
+   [
+    "North",
+    46054,
+    "B",
+    80,
+    400,
+    32000
+   ],
+   [
+    "North",
+    46082,
+    "A",
+    95,
+    250,
+    23750
+   ],
+   [
+    "South",
+    46023,
+    "B",
+    60,
+    400,
+    24000
+   ],
+   [
+    "South",
+    46054,
+    "A",
+    150,
+    250,
+    37500
+   ],
+   [
+    "South",
+    46082,
+    "B",
+    110,
+    400,
+    44000
+   ],
+   [
+    "East",
+    46023,
+    "A",
+    70,
+    250,
+    17500
+   ],
+   [
+    "East",
+    46054,
+    "A",
+    65,
+    250,
+    16250
+   ],
+   [
+    "East",
+    46082,
+    "B",
+    40,
+    400,
+    16000
+   ],
+   [
+    "West",
+    46023,
+    "B",
+    130,
+    400,
+    52000
+   ],
+   [
+    "West",
+    46054,
+    "B",
+    90,
+    400,
+    36000
+   ],
+   [
+    "West",
+    46082,
+    "A",
+    105,
+    250,
+    26250
+   ]
+  ],
+  "parts": "SUMIFS,F2:F13,NORTH",
+  "expect": "formula"
+ },
+ {
+  "id": "F40",
+  "row": 41,
+  "skill": "Held-out v3",
+  "prompt": "Average units per row for the West region.",
+  "fn": "formula",
+  "contextAddress": "Sales!A1:F13",
+  "context": [
+   [
+    "Region",
+    "Month",
+    "Product",
+    "Units",
+    "Unit price (Rs)",
+    "Revenue (Rs)"
+   ],
+   [
+    "North",
+    46023,
+    "A",
+    120,
+    250,
+    30000
+   ],
+   [
+    "North",
+    46054,
+    "B",
+    80,
+    400,
+    32000
+   ],
+   [
+    "North",
+    46082,
+    "A",
+    95,
+    250,
+    23750
+   ],
+   [
+    "South",
+    46023,
+    "B",
+    60,
+    400,
+    24000
+   ],
+   [
+    "South",
+    46054,
+    "A",
+    150,
+    250,
+    37500
+   ],
+   [
+    "South",
+    46082,
+    "B",
+    110,
+    400,
+    44000
+   ],
+   [
+    "East",
+    46023,
+    "A",
+    70,
+    250,
+    17500
+   ],
+   [
+    "East",
+    46054,
+    "A",
+    65,
+    250,
+    16250
+   ],
+   [
+    "East",
+    46082,
+    "B",
+    40,
+    400,
+    16000
+   ],
+   [
+    "West",
+    46023,
+    "B",
+    130,
+    400,
+    52000
+   ],
+   [
+    "West",
+    46054,
+    "B",
+    90,
+    400,
+    36000
+   ],
+   [
+    "West",
+    46082,
+    "A",
+    105,
+    250,
+    26250
+   ]
+  ],
+  "parts": "AVERAGEIF,WEST,D2:D13",
+  "expect": "formula"
+ },
+ {
+  "id": "F41",
+  "row": 42,
+  "skill": "Held-out v3",
+  "prompt": "Unit price of the row with the most units.",
+  "fn": "formula",
+  "contextAddress": "Sales!A1:F13",
+  "context": [
+   [
+    "Region",
+    "Month",
+    "Product",
+    "Units",
+    "Unit price (Rs)",
+    "Revenue (Rs)"
+   ],
+   [
+    "North",
+    46023,
+    "A",
+    120,
+    250,
+    30000
+   ],
+   [
+    "North",
+    46054,
+    "B",
+    80,
+    400,
+    32000
+   ],
+   [
+    "North",
+    46082,
+    "A",
+    95,
+    250,
+    23750
+   ],
+   [
+    "South",
+    46023,
+    "B",
+    60,
+    400,
+    24000
+   ],
+   [
+    "South",
+    46054,
+    "A",
+    150,
+    250,
+    37500
+   ],
+   [
+    "South",
+    46082,
+    "B",
+    110,
+    400,
+    44000
+   ],
+   [
+    "East",
+    46023,
+    "A",
+    70,
+    250,
+    17500
+   ],
+   [
+    "East",
+    46054,
+    "A",
+    65,
+    250,
+    16250
+   ],
+   [
+    "East",
+    46082,
+    "B",
+    40,
+    400,
+    16000
+   ],
+   [
+    "West",
+    46023,
+    "B",
+    130,
+    400,
+    52000
+   ],
+   [
+    "West",
+    46054,
+    "B",
+    90,
+    400,
+    36000
+   ],
+   [
+    "West",
+    46082,
+    "A",
+    105,
+    250,
+    26250
+   ]
+  ],
+  "parts": "MAX,D2:D13,E2:E13",
+  "expect": "formula"
+ },
+ {
+  "id": "F42",
+  "row": 43,
+  "skill": "Held-out v3",
+  "prompt": "Number of rows for product B with revenue over 30,000.",
+  "fn": "formula",
+  "contextAddress": "Sales!A1:F13",
+  "context": [
+   [
+    "Region",
+    "Month",
+    "Product",
+    "Units",
+    "Unit price (Rs)",
+    "Revenue (Rs)"
+   ],
+   [
+    "North",
+    46023,
+    "A",
+    120,
+    250,
+    30000
+   ],
+   [
+    "North",
+    46054,
+    "B",
+    80,
+    400,
+    32000
+   ],
+   [
+    "North",
+    46082,
+    "A",
+    95,
+    250,
+    23750
+   ],
+   [
+    "South",
+    46023,
+    "B",
+    60,
+    400,
+    24000
+   ],
+   [
+    "South",
+    46054,
+    "A",
+    150,
+    250,
+    37500
+   ],
+   [
+    "South",
+    46082,
+    "B",
+    110,
+    400,
+    44000
+   ],
+   [
+    "East",
+    46023,
+    "A",
+    70,
+    250,
+    17500
+   ],
+   [
+    "East",
+    46054,
+    "A",
+    65,
+    250,
+    16250
+   ],
+   [
+    "East",
+    46082,
+    "B",
+    40,
+    400,
+    16000
+   ],
+   [
+    "West",
+    46023,
+    "B",
+    130,
+    400,
+    52000
+   ],
+   [
+    "West",
+    46054,
+    "B",
+    90,
+    400,
+    36000
+   ],
+   [
+    "West",
+    46082,
+    "A",
+    105,
+    250,
+    26250
+   ]
+  ],
+  "parts": "COUNTIFS,>30000",
+  "expect": "formula"
+ },
+ {
+  "id": "F43",
+  "row": 44,
+  "skill": "Held-out v3",
+  "prompt": "Day of the week (e.g. Monday) of the date in row 4.",
+  "fn": "formula",
+  "contextAddress": "Sales!A1:F13",
+  "context": [
+   [
+    "Region",
+    "Month",
+    "Product",
+    "Units",
+    "Unit price (Rs)",
+    "Revenue (Rs)"
+   ],
+   [
+    "North",
+    46023,
+    "A",
+    120,
+    250,
+    30000
+   ],
+   [
+    "North",
+    46054,
+    "B",
+    80,
+    400,
+    32000
+   ],
+   [
+    "North",
+    46082,
+    "A",
+    95,
+    250,
+    23750
+   ],
+   [
+    "South",
+    46023,
+    "B",
+    60,
+    400,
+    24000
+   ],
+   [
+    "South",
+    46054,
+    "A",
+    150,
+    250,
+    37500
+   ],
+   [
+    "South",
+    46082,
+    "B",
+    110,
+    400,
+    44000
+   ],
+   [
+    "East",
+    46023,
+    "A",
+    70,
+    250,
+    17500
+   ],
+   [
+    "East",
+    46054,
+    "A",
+    65,
+    250,
+    16250
+   ],
+   [
+    "East",
+    46082,
+    "B",
+    40,
+    400,
+    16000
+   ],
+   [
+    "West",
+    46023,
+    "B",
+    130,
+    400,
+    52000
+   ],
+   [
+    "West",
+    46054,
+    "B",
+    90,
+    400,
+    36000
+   ],
+   [
+    "West",
+    46082,
+    "A",
+    105,
+    250,
+    26250
+   ]
+  ],
+  "parts": "TEXT,B4,DDDD",
+  "expect": "formula"
+ },
+ {
+  "id": "F44",
+  "row": 45,
+  "skill": "Held-out v3",
+  "prompt": "Name in row 10 written surname first, like: Menon, Kavya",
+  "fn": "formula",
+  "contextAddress": "Messy!A1:F11",
+  "context": [
+   [
+    "ID",
+    "Name",
+    "Phone",
+    "Joined (text)",
+    "Amount (text)",
+    "Email"
+   ],
+   [
+    101,
+    "  rahul SHARMA ",
+    "98201-33445",
+    "05/01/2026",
+    "Rs 1,250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    102,
+    "Priya  Nair",
+    "+91 99000 12345",
+    "2026-01-17",
+    "\u20b9 980",
+    "priya.nair@outlook.com"
+   ],
+   [
+    103,
+    "ANIL kumar",
+    "(022) 2811 0099",
+    "17-Jan-2026",
+    "2,400.50",
+    " anil.k@yahoo.in"
+   ],
+   [
+    104,
+    "meera iyer",
+    "9444011872",
+    "1/3/2026",
+    "N/A",
+    "MEERA.IYER@GMAIL.COM"
+   ],
+   [
+    105,
+    "Rahul Sharma",
+    "98201 33445",
+    "05-01-2026",
+    "1250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    106,
+    "Dev Patel",
+    "",
+    "2026-02-02",
+    "750",
+    "dev.patel@gmail.com"
+   ],
+   [
+    107,
+    "sana  KHAN",
+    "",
+    "2026-02-10",
+    "",
+    "sana.khan@proton.me"
+   ],
+   [
+    108,
+    "Arjun Rao",
+    "080-4123-9876",
+    "2026-02-14",
+    "Rs. 3,100",
+    "arjun.rao@zoho.com"
+   ],
+   [
+    109,
+    "kavya menon ",
+    "+91-98450-11223",
+    "2026-03-01",
+    "1,050",
+    "kavya.m@gmail.com"
+   ],
+   [
+    110,
+    "Rohit Verma",
+    "99887 66554",
+    "2026-03-05",
+    "\u20b92,000",
+    "rohit.verma@gmail.com"
+   ]
+  ],
+  "parts": "B10,FIND",
+  "expect": "formula"
+ },
+ {
+  "id": "F45",
+  "row": 46,
+  "skill": "Held-out v3",
+  "prompt": "How many names are written entirely in lowercase?",
+  "fn": "formula",
+  "contextAddress": "Messy!A1:F11",
+  "context": [
+   [
+    "ID",
+    "Name",
+    "Phone",
+    "Joined (text)",
+    "Amount (text)",
+    "Email"
+   ],
+   [
+    101,
+    "  rahul SHARMA ",
+    "98201-33445",
+    "05/01/2026",
+    "Rs 1,250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    102,
+    "Priya  Nair",
+    "+91 99000 12345",
+    "2026-01-17",
+    "\u20b9 980",
+    "priya.nair@outlook.com"
+   ],
+   [
+    103,
+    "ANIL kumar",
+    "(022) 2811 0099",
+    "17-Jan-2026",
+    "2,400.50",
+    " anil.k@yahoo.in"
+   ],
+   [
+    104,
+    "meera iyer",
+    "9444011872",
+    "1/3/2026",
+    "N/A",
+    "MEERA.IYER@GMAIL.COM"
+   ],
+   [
+    105,
+    "Rahul Sharma",
+    "98201 33445",
+    "05-01-2026",
+    "1250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    106,
+    "Dev Patel",
+    "",
+    "2026-02-02",
+    "750",
+    "dev.patel@gmail.com"
+   ],
+   [
+    107,
+    "sana  KHAN",
+    "",
+    "2026-02-10",
+    "",
+    "sana.khan@proton.me"
+   ],
+   [
+    108,
+    "Arjun Rao",
+    "080-4123-9876",
+    "2026-02-14",
+    "Rs. 3,100",
+    "arjun.rao@zoho.com"
+   ],
+   [
+    109,
+    "kavya menon ",
+    "+91-98450-11223",
+    "2026-03-01",
+    "1,050",
+    "kavya.m@gmail.com"
+   ],
+   [
+    110,
+    "Rohit Verma",
+    "99887 66554",
+    "2026-03-05",
+    "\u20b92,000",
+    "rohit.verma@gmail.com"
+   ]
+  ],
+  "parts": "B2:B11,LOWER",
+  "expect": "formula"
+ },
+ {
+  "id": "F46",
+  "row": 47,
+  "skill": "Held-out v3",
+  "prompt": "Convert the amount in row 11 to a number.",
+  "fn": "formula",
+  "contextAddress": "Messy!A1:F11",
+  "context": [
+   [
+    "ID",
+    "Name",
+    "Phone",
+    "Joined (text)",
+    "Amount (text)",
+    "Email"
+   ],
+   [
+    101,
+    "  rahul SHARMA ",
+    "98201-33445",
+    "05/01/2026",
+    "Rs 1,250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    102,
+    "Priya  Nair",
+    "+91 99000 12345",
+    "2026-01-17",
+    "\u20b9 980",
+    "priya.nair@outlook.com"
+   ],
+   [
+    103,
+    "ANIL kumar",
+    "(022) 2811 0099",
+    "17-Jan-2026",
+    "2,400.50",
+    " anil.k@yahoo.in"
+   ],
+   [
+    104,
+    "meera iyer",
+    "9444011872",
+    "1/3/2026",
+    "N/A",
+    "MEERA.IYER@GMAIL.COM"
+   ],
+   [
+    105,
+    "Rahul Sharma",
+    "98201 33445",
+    "05-01-2026",
+    "1250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    106,
+    "Dev Patel",
+    "",
+    "2026-02-02",
+    "750",
+    "dev.patel@gmail.com"
+   ],
+   [
+    107,
+    "sana  KHAN",
+    "",
+    "2026-02-10",
+    "",
+    "sana.khan@proton.me"
+   ],
+   [
+    108,
+    "Arjun Rao",
+    "080-4123-9876",
+    "2026-02-14",
+    "Rs. 3,100",
+    "arjun.rao@zoho.com"
+   ],
+   [
+    109,
+    "kavya menon ",
+    "+91-98450-11223",
+    "2026-03-01",
+    "1,050",
+    "kavya.m@gmail.com"
+   ],
+   [
+    110,
+    "Rohit Verma",
+    "99887 66554",
+    "2026-03-05",
+    "\u20b92,000",
+    "rohit.verma@gmail.com"
+   ]
+  ],
+  "parts": "E11",
+  "expect": "formula"
+ },
+ {
+  "id": "F47",
+  "row": 48,
+  "skill": "Held-out v3",
+  "prompt": "Show Missing if the phone or the amount in row 7 is empty, otherwise OK.",
+  "fn": "formula",
+  "contextAddress": "Messy!A1:F11",
+  "context": [
+   [
+    "ID",
+    "Name",
+    "Phone",
+    "Joined (text)",
+    "Amount (text)",
+    "Email"
+   ],
+   [
+    101,
+    "  rahul SHARMA ",
+    "98201-33445",
+    "05/01/2026",
+    "Rs 1,250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    102,
+    "Priya  Nair",
+    "+91 99000 12345",
+    "2026-01-17",
+    "\u20b9 980",
+    "priya.nair@outlook.com"
+   ],
+   [
+    103,
+    "ANIL kumar",
+    "(022) 2811 0099",
+    "17-Jan-2026",
+    "2,400.50",
+    " anil.k@yahoo.in"
+   ],
+   [
+    104,
+    "meera iyer",
+    "9444011872",
+    "1/3/2026",
+    "N/A",
+    "MEERA.IYER@GMAIL.COM"
+   ],
+   [
+    105,
+    "Rahul Sharma",
+    "98201 33445",
+    "05-01-2026",
+    "1250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    106,
+    "Dev Patel",
+    "",
+    "2026-02-02",
+    "750",
+    "dev.patel@gmail.com"
+   ],
+   [
+    107,
+    "sana  KHAN",
+    "",
+    "2026-02-10",
+    "",
+    "sana.khan@proton.me"
+   ],
+   [
+    108,
+    "Arjun Rao",
+    "080-4123-9876",
+    "2026-02-14",
+    "Rs. 3,100",
+    "arjun.rao@zoho.com"
+   ],
+   [
+    109,
+    "kavya menon ",
+    "+91-98450-11223",
+    "2026-03-01",
+    "1,050",
+    "kavya.m@gmail.com"
+   ],
+   [
+    110,
+    "Rohit Verma",
+    "99887 66554",
+    "2026-03-05",
+    "\u20b92,000",
+    "rohit.verma@gmail.com"
+   ]
+  ],
+  "parts": "C7,E7,MISSING",
+  "expect": "formula"
+ },
+ {
+  "id": "F48",
+  "row": 49,
+  "skill": "Held-out v3",
+  "prompt": "Phone in row 4 as digits only.",
+  "fn": "formula",
+  "contextAddress": "Messy!A1:F11",
+  "context": [
+   [
+    "ID",
+    "Name",
+    "Phone",
+    "Joined (text)",
+    "Amount (text)",
+    "Email"
+   ],
+   [
+    101,
+    "  rahul SHARMA ",
+    "98201-33445",
+    "05/01/2026",
+    "Rs 1,250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    102,
+    "Priya  Nair",
+    "+91 99000 12345",
+    "2026-01-17",
+    "\u20b9 980",
+    "priya.nair@outlook.com"
+   ],
+   [
+    103,
+    "ANIL kumar",
+    "(022) 2811 0099",
+    "17-Jan-2026",
+    "2,400.50",
+    " anil.k@yahoo.in"
+   ],
+   [
+    104,
+    "meera iyer",
+    "9444011872",
+    "1/3/2026",
+    "N/A",
+    "MEERA.IYER@GMAIL.COM"
+   ],
+   [
+    105,
+    "Rahul Sharma",
+    "98201 33445",
+    "05-01-2026",
+    "1250",
+    "Rahul.Sharma@Gmail.com "
+   ],
+   [
+    106,
+    "Dev Patel",
+    "",
+    "2026-02-02",
+    "750",
+    "dev.patel@gmail.com"
+   ],
+   [
+    107,
+    "sana  KHAN",
+    "",
+    "2026-02-10",
+    "",
+    "sana.khan@proton.me"
+   ],
+   [
+    108,
+    "Arjun Rao",
+    "080-4123-9876",
+    "2026-02-14",
+    "Rs. 3,100",
+    "arjun.rao@zoho.com"
+   ],
+   [
+    109,
+    "kavya menon ",
+    "+91-98450-11223",
+    "2026-03-01",
+    "1,050",
+    "kavya.m@gmail.com"
+   ],
+   [
+    110,
+    "Rohit Verma",
+    "99887 66554",
+    "2026-03-05",
+    "\u20b92,000",
+    "rohit.verma@gmail.com"
+   ]
+  ],
+  "parts": "C4,SUBSTITUTE",
+  "expect": "formula"
+ }
+]

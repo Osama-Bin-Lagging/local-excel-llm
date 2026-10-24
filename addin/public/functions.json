@@ -1,0 +1,75 @@
+{
+  "functions": [
+    {
+      "id": "H",
+      "name": "H",
+      "description": "LOKUP.H: ask the local model; optional context range is added to the prompt as data.",
+      "result": {
+        "type": "string"
+      },
+      "parameters": [
+        {
+          "name": "prompt",
+          "description": "Instruction for the model (text or cell).",
+          "type": "string"
+        },
+        {
+          "name": "context",
+          "description": "Optional cell or range with the data to work on.",
+          "type": "any",
+          "dimensionality": "matrix",
+          "optional": true
+        },
+        {
+          "name": "headers",
+          "description": "Optional header row, for when context is a single data row.",
+          "type": "any",
+          "dimensionality": "matrix",
+          "optional": true
+        },
+        {
+          "name": "model",
+          "description": "Optional Ollama model name, e.g. \"qwen3:8b\".",
+          "type": "string",
+          "optional": true
+        }
+      ],
+      "options": {
+        "cancelable": true
+      }
+    },
+    {
+      "id": "V",
+      "name": "V",
+      "description": "LOKUP.V: the local model writes an Excel formula. Pass the data range so it knows the addresses.",
+      "result": {
+        "type": "string"
+      },
+      "parameters": [
+        {
+          "name": "request",
+          "description": "What the formula should do.",
+          "type": "string"
+        },
+        {
+          "name": "data",
+          "description": "Optional range with headers in the first row.",
+          "type": "any",
+          "dimensionality": "matrix",
+          "optional": true
+        },
+        {
+          "name": "model",
+          "description": "Optional Ollama model name.",
+          "type": "string",
+          "optional": true
+        }
+      ],
+      "options": {
+        "cancelable": true,
+        "requiresAddress": true,
+        "requiresParameterAddresses": true
+      }
+    }
+  ]
+}

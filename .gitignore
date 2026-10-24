@@ -1,0 +1,32 @@
+# local benchmark outputs (regenerate with the harness)
+harness/abl/
+harness/abl2/
+harness/all/
+harness/baseline_v1/
+harness/big/
+harness/brief/
+harness/exp_dev/
+harness/final_real/
+harness/final_v3/
+harness/peek/
+harness/q35/
+harness/q35pp/
+harness/renamed/
+harness/tune_v5/
+harness/v5/
+harness/results-*.json
+harness/real/results-*.json
+harness/*.log
+harness/grade*.txt
+harness/real/sanity.txt
+harness/last_grade.applescript
+
+# runtime
+addin/logs/
+node_modules/
+addin/vendor-build/node_modules/
+
+# misc
+.omc/
+.DS_Store
+~$*
