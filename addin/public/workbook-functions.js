@@ -11,7 +11,7 @@ async function readWorkbook() {
     const sheets = ctx.workbook.worksheets;
     sheets.load("items/name");
     await ctx.sync();
-    const used = sheets.items.filter((ws) => ws.name !== LOG_SHEET).map((ws) => {
+    const used = sheets.items.map((ws) => {
       const r = ws.getUsedRangeOrNullObject(true); // true = values only, ignore formatting-only cells
       r.load("address,values,formulas");
       return { name: ws.name, r };
@@ -74,9 +74,11 @@ async function workbookAsk(prompt, model, invocation) {
 
 /* ---------------------------------------------------------------- LOOOKUP.DO / LOOOKUP.UNDO (cell agent)
    DO plans cell edits and writes them once, after calculation.
-   Ledger + backup live on a very-hidden sheet, so recalcs and reopening never repeat a run. */
+   Ledger + backup live in the workbook's settings, so recalcs and reopening never repeat a run. */
 
-const LOG_SHEET = "LOOOKUP_log"; // columns: run | key | status | sheet | cell | old | new
+// Ledger in the workbook's settings (saved in the file, no sheet): rows of [run, key, status, sheet, cell, old, new].
+// A very-hidden ledger sheet created by the add-in froze Excel for Mac when the user switched sheets.
+const LOG_SETTING = "LOOOKUP_log";
 const DO_MAX_EDITS = 200;
 const DO_SYSTEM = `You edit a Microsoft Excel workbook by filling cells. Reply with JSON only, no prose:
 {"edits":[{"cell":"Sheet1!B2","value":"text, a number, or a formula starting with ="}]}
@@ -179,13 +181,11 @@ function currentValue(wb, edit) {
 }
 
 async function readLog(ctx) {
-  const ws = ctx.workbook.worksheets.getItemOrNullObject(LOG_SHEET);
+  const item = ctx.workbook.settings.getItemOrNullObject(LOG_SETTING);
+  item.load("value");
   await ctx.sync();
-  if (ws.isNullObject) return { ws: null, rows: [] };
-  const used = ws.getUsedRange();
-  used.load("values");
-  await ctx.sync();
-  return { ws, rows: used.values.slice(1) }; // row 1 = header
+  const rows = item.isNullObject ? [] : JSON.parse(item.value || "[]");
+  return { rows, save: (r) => ctx.workbook.settings.add(LOG_SETTING, JSON.stringify(r)) };
 }
 
 // { done: run number if this key already ran, next: the number the next run will get }
@@ -200,16 +200,9 @@ async function findRun(key) {
 // Writes the plan; skips cells that became non-empty since the preview. Returns { run, written, skipped }.
 async function applyPlan(key, edits, run) {
   return Excel.run(async (ctx) => {
-    let { ws, rows } = await readLog(ctx);
+    const { rows, save } = await readLog(ctx);
     const prior = rows.find((x) => x[1] === key);
     if (prior) return { run: Number(prior[0]), already: true };
-    if (!ws) {
-      ws = ctx.workbook.worksheets.add(LOG_SHEET);
-      const head = ws.getRange("A1:G1");
-      head.numberFormat = [Array(7).fill("@")];
-      head.values = [["run", "key", "status", "sheet", "cell", "old", "new"]];
-      ws.visibility = Excel.SheetVisibility.veryHidden;
-    }
     const targets = edits.map((e) => {
       const r = ctx.workbook.worksheets.getItem(e.sheet).getRange(e.cell);
       r.load("formulas");
@@ -221,10 +214,7 @@ async function applyPlan(key, edits, run) {
     todo.forEach(({ r }) => r.load("formulas")); // log what Excel stored (it normalises formulas), for UNDO's check
     await ctx.sync();
     if (todo.length) {
-      const log = todo.map(({ e, r }) => [String(run), key, "applied", e.sheet, e.cell, "", String(r.formulas[0][0])]);
-      const at = ws.getRange(`A${rows.length + 2}:G${rows.length + 1 + log.length}`);
-      at.numberFormat = log.map((x) => x.map(() => "@")); // text, so logged formulas stay inert
-      at.values = log;
+      save(rows.concat(todo.map(({ e, r }) => [run, key, "applied", e.sheet, e.cell, "", String(r.formulas[0][0])])));
       await ctx.sync();
     }
     return { run, written: todo.length, skipped: targets.length - todo.length, cells: new Set(todo.map(({ e }) => `${e.sheet}!${e.cell}`)) };
@@ -289,8 +279,8 @@ async function workbookUndo(run, invocation) {
   setTimeout(async () => {
     try {
       const msg = await Excel.run(async (ctx) => {
-        const { ws, rows } = await readLog(ctx);
-        const mine = rows.map((x, i) => ({ x, row: i + 2 })).filter(({ x }) => Number(x[0]) === Number(run));
+        const { rows, save } = await readLog(ctx);
+        const mine = rows.map((x) => ({ x })).filter(({ x }) => Number(x[0]) === Number(run));
         if (!mine.length) return `No LOOOKUP.DO run ${run} in this workbook.`;
         const live = mine.filter(({ x }) => x[2] === "applied");
         if (!live.length) return `Run ${run} was already undone.`;
@@ -306,8 +296,9 @@ async function workbookUndo(run, invocation) {
             c.r.formulas = [[c.x[5]]];
             restored++;
           }
-          ws.getRange(`C${c.row}`).values = [["undone"]];
+          c.x[2] = "undone";
         }
+        save(rows);
         await ctx.sync();
         const kept = cells.length - restored;
         return `↩ Undid run ${run}: cleared ${restored} cell${restored === 1 ? "" : "s"}` + (kept ? ` · kept ${kept} you changed since` : "");
