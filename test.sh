@@ -28,7 +28,9 @@ code=$(curl -s -o /dev/null -w "%{http_code}" https://localhost:3000/api/version
 [ $started = 1 ] && kill $srv 2>/dev/null
 
 echo "== Excel add-in registration"
-if [ -f ~/Library/Containers/com.microsoft.Excel/Data/Documents/wef/local-llm.manifest.xml ]; then echo "✓ manifest installed for Excel"; else echo "! manifest not installed (is Excel installed? rerun ./setup.sh)"; fi
+for m in local-llm local-llm-workbook; do
+  if [ -f ~/Library/Containers/com.microsoft.Excel/Data/Documents/wef/$m.manifest.xml ]; then echo "✓ $m manifest installed for Excel"; else echo "! $m manifest not installed (is Excel installed? rerun ./setup.sh)"; fi
+done
 
 echo "== LOKUP.H / LOKUP.V on 7 tasks"
 node harness/quicktest.js ${MODEL:+$MODEL} || fail=1

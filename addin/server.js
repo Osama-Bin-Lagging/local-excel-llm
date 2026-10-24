@@ -160,6 +160,20 @@ function claudeRoute(req, res) {
   });
 }
 
+// ---- /log: the add-in's shared-runtime page reports diagnostics here (same-origin only, 64 KB cap)
+const RUNTIME_LOG = path.join(__dirname, "logs", "runtime.log");
+function logRoute(req, res) {
+  if (rejectForeign(req, res)) return;
+  let body = "";
+  req.on("data", (c) => { if (body.length < 65536) body += c; });
+  req.on("end", () => {
+    fs.mkdirSync(path.dirname(RUNTIME_LOG), { recursive: true });
+    fs.appendFileSync(RUNTIME_LOG, `${new Date().toISOString()} ${body.slice(0, 65536)}\n`);
+    res.writeHead(204);
+    res.end();
+  });
+}
+
 function serveStatic(req, res) {
   const urlPath = decodeURIComponent(req.url.split("?")[0]);
   const file = path.normalize(path.join(PUBLIC, urlPath === "/" ? "taskpane.html" : urlPath));
@@ -182,6 +196,7 @@ https
     console.log(new Date().toISOString().slice(11, 19), req.method, req.url);
     if (req.url.startsWith("/api/")) return proxy(req, res);
     if (req.url === "/claude" && req.method === "POST") return claudeRoute(req, res);
+    if (req.url === "/log" && req.method === "POST") return logRoute(req, res);
     serveStatic(req, res);
   })
   .listen(PORT, "127.0.0.1", () => console.log(`Add-in server on https://localhost:${PORT} → Ollama ${OLLAMA.host}:${OLLAMA.port}`));

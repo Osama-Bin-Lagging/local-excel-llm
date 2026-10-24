@@ -1,0 +1,29 @@
+{
+  "functions": [
+    {
+      "id": "H",
+      "name": "H",
+      "description": "Ask the local AI about the whole workbook (reads every sheet). Text answer.",
+      "result": {
+        "type": "string"
+      },
+      "options": {
+        "cancelable": true,
+        "requiresAddress": true
+      },
+      "parameters": [
+        {
+          "name": "prompt",
+          "description": "What to ask, e.g. \"which region grew fastest?\"",
+          "type": "string"
+        },
+        {
+          "name": "model",
+          "description": "Optional: Ollama model name, or \"claude\" / \"claude:haiku\" / \"claude:opus\"",
+          "type": "string",
+          "optional": true
+        }
+      ]
+    }
+  ]
+}

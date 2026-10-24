@@ -44,6 +44,15 @@ Put a Claude model in the `model` argument — the cell's prompt and data then g
 `"claude"` = Sonnet; also `"claude:haiku"`, `"claude:sonnet"`, `"claude:opus"`. Tools are disabled — Claude only returns text.
 Cells without a `claude…` model stay fully local.
 
+## Whole-workbook questions: LOOOKUP (second add-in)
+Insert **Local LLM Workbook** too (Home → Add-ins). It reads every sheet itself — no ranges to pass:
+```
+=LOOOKUP.H("Which region had the highest margin?")
+=LOOOKUP.H("Any inconsistencies between Summary and Deal Model?", "claude")
+```
+Runs when entered or edited (not on every change elsewhere — each run is a model call). Local models take
+workbooks up to ~20k characters of cell content; `"claude"` models up to ~400k.
+
 ## Settings
 In `addin/public/functions.js`:
 - `DEFAULT_MODEL` — `qwen3:4b-instruct` (best for 8 GB). On 16 GB, `qwen3:8b` is a bit more accurate.
@@ -61,6 +70,6 @@ prd.md            Requirements, design decisions and all benchmark results
 ## Troubleshooting
 - Cells show `#BUSY` forever → the add-in server isn't running (`./start.sh`).
 - `#N/A … Ollama not reachable` → `brew services start ollama`.
-- Excel still shows old function names → quit Excel, delete
-  `~/Library/Containers/com.microsoft.Excel/Data/Library/Caches/Microsoft/Office/16.0/Wef/`, reopen.
+- Excel runs old add-in code or shows old function names (it caches add-ins and ignores version bumps) →
+  quit Excel, `./reload.sh`, reopen Excel, then Home → Add-ins → insert the add-in(s) again.
 - Slow on 8 GB → close Chrome/Docker; set `FORMULA_OPTS.vote = "fail"`.

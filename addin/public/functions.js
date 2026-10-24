@@ -447,8 +447,12 @@ function cleanFormula(text) {
     .map((l) => l.trim().replace(/^`|`$/g, "").replace(/^formula\s*:\s*/i, ""));
   const f = lines.find((l) => l.startsWith("=")) || lines.find((l) => /^[A-Z][A-Z0-9.]*\(/.test(l));
   if (!f) return text.trim();
-  return f.startsWith("=") ? f : "=" + f;
+  return straightQuotes(f.startsWith("=") ? f : "=" + f);
 }
+
+// Models sometimes write typographic quotes: ’Deal Model’!B18 makes Excel look for an external file.
+// Curly doubles are never valid delimiters; curly singles are fixed only around a sheet name (keeps "don’t").
+const straightQuotes = (f) => f.replace(/[“”„]/g, '"').replace(/[‘’‛]([^‘’‛'"!]+)[‘’‛]!/g, "'$1'!");
 
 /* ---- checker: things we can verify without Excel evaluating the formula ---- */
 
@@ -736,5 +740,8 @@ async function formula(prompt, context, model, invocation) {
   return best.find((c) => votes.get(keyOf(c)) === top).f; // ties → earliest (greedy first)
 }
 
-CustomFunctions.associate("H", ask); // =LOKUP.H
-CustomFunctions.associate("V", formula); // =LOKUP.V
+// LOOOKUP's page loads this file for its helpers and sets LOKUP_NO_ASSOCIATE so these aren't registered twice.
+if (!globalThis.LOKUP_NO_ASSOCIATE) {
+  CustomFunctions.associate("H", ask); // =LOKUP.H
+  CustomFunctions.associate("V", formula); // =LOKUP.V
+}

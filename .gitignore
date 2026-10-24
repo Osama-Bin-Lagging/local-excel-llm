@@ -34,3 +34,6 @@ addin/vendor-build/node_modules/
 # python caches
 __pycache__/
 *.pyc
+
+# Claude benchmark outputs
+harness/claude/

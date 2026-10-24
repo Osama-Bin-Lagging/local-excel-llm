@@ -96,6 +96,8 @@ for f in result_files:
             bad = {m.strip("'") for m in re.findall(r"('[^']+'|[A-Za-z_][\w.]*)!", out)} - SHEETS[test]
             if not out.startswith("="):
                 verdicts[r["id"]] = ("✗", "not a formula", out)
+            elif re.search(r"[‘’‛“”„]", out):  # ’Sheet’!A1 also makes Excel open a blocking file picker
+                verdicts[r["id"]] = ("✗", "curly quotes", out)
             elif bad:  # unknown sheet → Excel would open a blocking file picker
                 verdicts[r["id"]] = ("✗", f"unknown sheet {sorted(bad)}", out)
             elif refers_to_itself(out, t["sheet"], t["cell"]):  # Excel would show a circular-reference dialog
