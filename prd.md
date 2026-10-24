@@ -102,3 +102,14 @@ Target model: qwen3:4b-instruct (3.3 GB in memory → fits an 8 GB Mac). Each ad
 
 ## Rename (2026-10-24)
 - `LLAMA.ASK` → `LOKUP.H`, `LLAMA.FORMULA` → `LOKUP.V` (namespace `LOKUP`; Excel requires a namespace, so a bare `=HLOKUP()` is not possible). Manifest version bumped to 0.2.0.0 to bust Excel's add-in cache.
+
+## qwen3.5:4b evaluation (2026-10-24)
+Same harness, 144 tasks (dev 128 + v5 16). Uses ~12.7 GB in memory with real prompts (vs 4.1 GB on a one-line test) → not viable on 8 GB.
+| Setup | Dev 128 | v5 16 | s/cell |
+|---|---|---|---|
+| qwen3:4b-instruct, add-ons (default) | **102** | **12** | 6.0 |
+| qwen3.5:4b, add-ons, presence_penalty 0 | 79 | 9 | 12.3 |
+| qwen3.5:4b, add-ons, built-in penalty 1.5 | 76 | 8 | 8.6 |
+| qwen3.5:4b, no add-ons, penalty 0 | 70 | 8 | 8.3 |
+| qwen3.5:4b + thinking | stopped: 105–708 s per cell | | |
+Decision: keep qwen3:4b-instruct. Lesson: check built-in model parameters (`ollama show`) and memory under real prompts before judging a model.
