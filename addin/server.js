@@ -82,10 +82,13 @@ function runClaude({ model, system, prompt }) {
       const args = ["-p", "--tools", "", "--strict-mcp-config", "--no-session-persistence", "--setting-sources", "",
                     "--output-format", "json", "--model", CLAUDE_MODELS[model] || "sonnet"];
       if (system) args.push("--system-prompt", system);
-      let done = false, timer = null, child;
+      let done = false, timer = null, child, timedOut = false;
+      const t0 = Date.now();
       const finish = (result) => {
         if (done) return; // close/error can both fire; release the slot exactly once
         done = true;
+        console.log(new Date().toISOString().slice(11, 19), "claude", model, result.status, `${((Date.now() - t0) / 1000).toFixed(1)}s`,
+          `${prompt.length} chars`, result.body.error ? `error: ${String(result.body.error).slice(0, 120)}` : "");
         clearTimeout(timer);
         claudeRunning--;
         if (claudeQueue.length) claudeQueue.shift()();
@@ -97,12 +100,13 @@ function runClaude({ model, system, prompt }) {
         return finish({ status: 503, body: { error: `could not start '${CLAUDE_BIN}'` } });
       }
       let out = "", err = "";
-      timer = setTimeout(() => child.kill("SIGKILL"), CLAUDE_TIMEOUT_MS);
+      timer = setTimeout(() => { timedOut = true; child.kill("SIGKILL"); }, CLAUDE_TIMEOUT_MS);
       child.stdout.on("data", (c) => (out += c));
       child.stderr.on("data", (c) => (err += c));
       child.stdin.on("error", () => {}); // EPIPE if the CLI exits early must not crash the server
       child.on("error", () => finish({ status: 503, body: { error: `'${CLAUDE_BIN}' not found — install Claude Code and log in` } }));
       child.on("close", () => {
+        if (timedOut) return finish({ status: 504, body: { error: `Claude took longer than ${CLAUDE_TIMEOUT_MS / 1000}s — try again` } });
         try {
           const parsed = JSON.parse(out);
           const events = Array.isArray(parsed) ? parsed : [parsed];
