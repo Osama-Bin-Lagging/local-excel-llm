@@ -188,15 +188,17 @@ async function readLog(ctx) {
   return { ws, rows: used.values.slice(1) }; // row 1 = header
 }
 
+// { done: run number if this key already ran, next: the number the next run will get }
 async function findRun(key) {
   return Excel.run(async (ctx) => {
-    const r = (await readLog(ctx)).rows.find((x) => x[1] === key);
-    return r ? Number(r[0]) : null;
+    const { rows } = await readLog(ctx);
+    const r = rows.find((x) => x[1] === key);
+    return { done: r ? Number(r[0]) : null, next: rows.reduce((m, x) => Math.max(m, Number(x[0]) || 0), 0) + 1 };
   });
 }
 
 // Writes the plan; skips cells that became non-empty since the preview. Returns { run, written, skipped }.
-async function applyPlan(key, edits) {
+async function applyPlan(key, edits, run) {
   return Excel.run(async (ctx) => {
     let { ws, rows } = await readLog(ctx);
     const prior = rows.find((x) => x[1] === key);
@@ -208,7 +210,6 @@ async function applyPlan(key, edits) {
       head.values = [["run", "key", "status", "sheet", "cell", "old", "new"]];
       ws.visibility = Excel.SheetVisibility.veryHidden;
     }
-    const run = rows.reduce((m, x) => Math.max(m, Number(x[0]) || 0), 0) + 1;
     const targets = edits.map((e) => {
       const r = ctx.workbook.worksheets.getItem(e.sheet).getRange(e.cell);
       r.load("formulas");
@@ -231,63 +232,50 @@ async function applyPlan(key, edits) {
 }
 
 const outcomes = new Map(); // key → result table of a run this session (also stops re-running a 0-edit run)
-const inFlight = new Set(); // keys being planned/applied right now (a recalc mid-run must not start another)
+const DO_WRITE_DELAY_MS = 500; // write after Excel has finished this calculation
 
-// Not streaming (Excel forbids stream + requiresAddress, and DO needs its own address). Plans, returns
-// "Applying…", writes after this calculation, then recalculates its cell, which shows what was written.
+// Not streaming (Excel forbids stream + requiresAddress, and DO needs its own address). Plans, returns the result
+// table at once, and writes the edits shortly after. It never makes Excel recalculate from inside the add-in:
+// that re-entered the calculation engine and crashed Excel for Mac.
 async function workbookDo(instruction, model, invocation) {
   try {
     if (isEmpty(instruction)) return [[""]];
     const m = model || WORKBOOK_DEFAULT_MODEL;
     const key = hashKey(m + "\u0000" + instruction);
     if (outcomes.has(key)) return outcomes.get(key);
-    if (inFlight.has(key)) return [["Applying…"]];
-    const done = await findRun(key);
+    const { done, next } = await findRun(key);
     if (done) return [[`✓ Applied earlier · run ${done} · undo: =LOOOKUP.UNDO(${done})`]];
     const caller = callerOf(invocation);
 
-    inFlight.add(key);
-    let plan;
-    try {
-      const wb = await readWorkbook();
-      let text = serialiseWorkbook(wb, caller);
-      for (const rows of WORKBOOK_ROW_STEPS) {
-        if (text.length <= WORKBOOK_MAX_CHARS) break;
-        text = serialiseWorkbook(wb, caller, rows);
-      }
-      if (text.length > WORKBOOK_MAX_CHARS) return [["⚠ Workbook too large for LOOOKUP.DO."]];
-      const reply = await generate(buildPrompt(`Task: ${instruction}`, text), m, invocation, DO_SYSTEM, undefined,
-        { num_ctx: contextFor(text), num_predict: 4096, format: "json" });
-      plan = parsePlan(reply, wb, caller);
-      if (!plan) return [["⚠ The model did not return a usable plan. Try again or rephrase."]];
-      if (!plan.length) return [["No edits proposed."]];
-      for (const e of plan) {
-        if (e.skip) continue;
-        if (inPreviewArea(e, caller, plan.length + 1)) e.skip = "DO cell / result area";
-        else if (currentValue(wb, e) !== "") e.skip = "not empty";
-      }
-    } finally {
-      if (!plan || !plan.length) inFlight.delete(key);
+    const wb = await readWorkbook();
+    let text = serialiseWorkbook(wb, caller);
+    for (const rows of WORKBOOK_ROW_STEPS) {
+      if (text.length <= WORKBOOK_MAX_CHARS) break;
+      text = serialiseWorkbook(wb, caller, rows);
     }
-
-    setTimeout(async () => {
-      try {
-        const r = await applyPlan(key, plan.filter((e) => !e.skip));
-        outcomes.set(key, r.already ? [[`✓ Applied earlier · run ${r.run} · undo: =LOOOKUP.UNDO(${r.run})`]] : [
-          [`✓ Applied ${r.written} edit${r.written === 1 ? "" : "s"} · run ${r.run} · undo: =LOOOKUP.UNDO(${r.run})`, "Value", "Status"],
-          ...plan.map((e) => [`${e.sheet}!${e.cell}`, String(e.value ?? ""),
-            e.skip ? `skipped: ${e.skip}` : r.cells.has(`${e.sheet}!${e.cell}`) ? "written" : "skipped: no longer empty"]),
-        ]);
-      } catch (e) {
-        outcomes.set(key, [[`⚠ Could not apply: ${e.message || e}`]]);
-      }
-      inFlight.delete(key);
-      Excel.run(async (ctx) => {
-        ctx.workbook.worksheets.getItem(caller.sheet).getRange(caller.cell).calculate();
-        await ctx.sync();
-      }).catch(() => {});
-    }, 0);
-    return [["Applying…"]];
+    if (text.length > WORKBOOK_MAX_CHARS) return [["⚠ Workbook too large for LOOOKUP.DO."]];
+    const reply = await generate(buildPrompt(`Task: ${instruction}`, text), m, invocation, DO_SYSTEM, undefined,
+      { num_ctx: contextFor(text), num_predict: 4096, format: "json" });
+    const plan = parsePlan(reply, wb, caller);
+    if (!plan) return [["⚠ The model did not return a usable plan. Try again or rephrase."]];
+    if (!plan.length) return [["No edits proposed."]];
+    for (const e of plan) {
+      if (e.skip) continue;
+      if (inPreviewArea(e, caller, plan.length + 1)) e.skip = "DO cell / result area";
+      else if (currentValue(wb, e) !== "") e.skip = "not empty";
+    }
+    const ok = plan.filter((e) => !e.skip);
+    const table = [
+      [`✓ ${ok.length} edit${ok.length === 1 ? "" : "s"} · run ${next} · undo: =LOOOKUP.UNDO(${next})`, "Value", "Status"],
+      ...plan.map((e) => [`${e.sheet}!${e.cell}`, String(e.value ?? ""), e.skip ? `skipped: ${e.skip}` : "written"]),
+    ];
+    outcomes.set(key, table); // set before writing, so a recalc meanwhile can't plan/write a second time
+    if (ok.length) {
+      setTimeout(() => {
+        applyPlan(key, ok, next).catch((e) => outcomes.set(key, [[`⚠ Could not write: ${e.message || e}`]]));
+      }, DO_WRITE_DELAY_MS);
+    }
+    return table;
   } catch (e) {
     return [[`⚠ ${e.message || e}`]];
   }
